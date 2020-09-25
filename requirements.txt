@@ -1,0 +1,22 @@
+# =============================================================================
+# DEPRECATION WARNING:
+#
+# The file `requirements.txt` does not influence the package dependencies and
+# will not be automatically created in the next version of PyScaffold (v4.x).
+#
+# Please have look at the docs for better alternatives
+# (`Dependency Management` section).
+# =============================================================================
+PyScaffold==3.2.3
+pyopenssl==19.1.0
+eventlet==0.26.1
+celery[redis]==4.4.7
+gunicorn==19.9.0
+gevent==20.6.2
+falcon==2.0.0
+graphql-core==2.2.1
+eiffellib==1.1.0
+requests==2.24.0
+jsontas==1.2.0
+packageurl-python==0.9.1
+etos-lib==0.0.post0.dev2+g773b419
