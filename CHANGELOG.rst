@@ -2,6 +2,11 @@
 Changelog
 =========
 
+Version 1.1.1
+-------------
+
+- f3f1cf1 Add dockerfile for workers and add in worker script (#17)
+
 Version 1.1.0
 -------------
 
