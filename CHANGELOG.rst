@@ -2,6 +2,13 @@
 Changelog
 =========
 
+Version 1.2.0
+-------------
+
+- 9151944 Make sure that we can make a copy of dataset (#20)
+- a41f1d1 Update IUT definition to account for the changes in prepare (#19)
+- 4a2f930 Add preparation stage to environment provider. (#18)
+
 Version 1.1.1
 -------------
 
