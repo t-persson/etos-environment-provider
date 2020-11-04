@@ -2,6 +2,12 @@
 Changelog
 =========
 
+Version 1.3.0
+-------------
+
+- bff6ba4 Update etos library to version 1.3.0
+- 1bc3163 Upgrade environment provider to python 3.9.0 (#21)
+
 Version 1.2.0
 -------------
 
