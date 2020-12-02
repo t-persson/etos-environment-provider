@@ -2,6 +2,12 @@
 Changelog
 =========
 
+Version 1.5.0
+-------------
+
+- 722a16a Update etos library to version 1.5.0
+- a1a0490 Move environment provider task to a function instead of task class. (#22)
+
 Version 1.4.0
 -------------
 
