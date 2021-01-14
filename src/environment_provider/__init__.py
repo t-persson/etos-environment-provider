@@ -1,4 +1,4 @@
-# Copyright 2020 Axis Communications AB.
+# Copyright 2020-2021 Axis Communications AB.
 #
 # For a full list of individual contributors, please see the commit history.
 #
@@ -15,5 +15,15 @@
 # limitations under the License.
 """ETOS environment provider module."""
 import os
+from importlib.metadata import version, PackageNotFoundError
+from etos_lib.logging.logger import setup_logging
+
+try:
+    VERSION = version("environment_provider")
+except PackageNotFoundError:
+    VERSION = "Unknown"
 
 BASE = os.path.dirname(os.path.abspath(__file__))
+DEV = os.getenv("DEV", "false").lower() == "true"
+ENVIRONMENT = "development" if DEV else "production"
+setup_logging("ETOS Environment Provider", VERSION, ENVIRONMENT)
