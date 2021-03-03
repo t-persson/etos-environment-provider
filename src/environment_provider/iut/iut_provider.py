@@ -1,4 +1,4 @@
-# Copyright 2020 Axis Communications AB.
+# Copyright 2020-2021 Axis Communications AB.
 #
 # For a full list of individual contributors, please see the commit history.
 #
@@ -144,7 +144,8 @@ class IutProvider:
                     raise IutNotAvailable(self.identity.to_string())
 
                 prepared_iuts = self.prepare(checked_out_iuts)
-                checkin = set(prepared_iuts) - set(checked_out_iuts)
+                checkin = set(checked_out_iuts) - set(prepared_iuts)
+
                 for iut in checkin:
                     self.checkin(iut)
                 self.logger.info("Prepared IUTs:")
