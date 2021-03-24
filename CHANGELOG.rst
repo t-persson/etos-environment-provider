@@ -2,6 +2,13 @@
 Changelog
 =========
 
+Version 1.12.0
+--------------
+
+- fc4e128 Update etos library to version 1.12.0
+- ef48484 Fix broken prepare step in Environment Provider (#29)
+- 79e7c99 Fix broken prepare step in Environment Provider (#28)
+
 Version 1.11.0
 --------------
 
