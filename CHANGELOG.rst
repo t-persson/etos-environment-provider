@@ -2,6 +2,11 @@
 Changelog
 =========
 
+Version 1.14.0
+--------------
+
+- 1ed27ab Update etos library to version 1.14.0
+
 Version 1.13.0
 --------------
 
