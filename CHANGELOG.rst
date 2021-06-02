@@ -2,6 +2,18 @@
 Changelog
 =========
 
+Version 1.16.2
+--------------
+
+- 4398acb Update etos library to version 1.16.2
+- 154b185 Revert "Update etos library to version 1.16.1"
+- a6d4e1a Adding changelog for version 1.16.1
+- 7b3cc31 Update etos library to version 1.16.1
+- 212a393 Revert "Adding changelog for version 1.16.0"
+- 092cc9e Revert "Update etos library to version 1.16.0"
+- 7147d69 Adding changelog for version 1.16.0
+- 8f8dd86 Update etos library to version 1.16.0
+
 Version 1.16.1
 --------------
 
