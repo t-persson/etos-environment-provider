@@ -2,6 +2,11 @@
 Changelog
 =========
 
+Version 1.19.0
+--------------
+
+- f35878b Update etos library to version 1.19.0
+
 Version 1.18.0
 --------------
 
