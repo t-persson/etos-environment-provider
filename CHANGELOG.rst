@@ -5,6 +5,12 @@ Changelog
 Version 1.20.0
 --------------
 
+- 6bc67f9 Adding changelog for version 1.20.0
+- b1fdbd2 Update etos library to version 1.20.0
+
+Version 1.20.0
+--------------
+
 - b1fdbd2 Update etos library to version 1.20.0
 
 Version 1.19.0
