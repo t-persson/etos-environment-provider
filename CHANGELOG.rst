@@ -2,6 +2,13 @@
 Changelog
 =========
 
+Version 1.23.0
+--------------
+
+- 389be02 Update etos library to version 1.23.0
+- 4f7ca6a Set a specific python version and update so that pylint is happy (#31)
+- 42cecbc Support configurating the wait timeouts (#30)
+
 Version 1.22.0
 --------------
 
