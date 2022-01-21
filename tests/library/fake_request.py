@@ -19,6 +19,8 @@
 class FakeRequest:  # pylint:disable=too-few-public-methods
     """Fake request structure."""
 
+    force_media_none = False
+
     def __init__(self):
         """Init some fake parameters."""
         self.fake_params = {}
@@ -38,6 +40,8 @@ class FakeRequest:  # pylint:disable=too-few-public-methods
     @property
     def media(self):
         """Media is used for POST requests."""
+        if self.force_media_none:
+            return None
         return self.fake_params
 
 
@@ -45,6 +49,8 @@ class FakeResponse:  # pylint:disable=too-few-public-methods
     """Fake response structure."""
 
     fake_responses = None
+    media = {}
+    status = 0
 
     def __init__(self):
         """Init a fake response storage dict."""
