@@ -22,6 +22,7 @@ import json
 from threading import Lock
 from copy import deepcopy
 from etos_lib.etos import ETOS
+from etos_lib.lib.database import Database
 from etos_lib.logging.logger import FORMAT_CONFIG
 from jsontas.jsontas import JsonTas
 from environment_provider.splitter.split import Splitter
@@ -82,7 +83,7 @@ class EnvironmentProvider:  # pylint:disable=too-many-instance-attributes
         self.dataset.add("json_dumps", JsonDumps)
         self.dataset.add("uuid_generate", UuidGenerate)
         self.dataset.add("join", Join)
-        self.registry = ProviderRegistry(self.etos, self.jsontas)
+        self.registry = ProviderRegistry(self.etos, self.jsontas, Database())
         self.splitter = Splitter(self.etos, {})
 
     def configure(self, suite_id):
