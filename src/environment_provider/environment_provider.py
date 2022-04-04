@@ -101,6 +101,8 @@ class EnvironmentProvider:  # pylint:disable=too-many-instance-attributes
                 "environment."
             )
         self.logger.info("Registry is configured.")
+        self.etos.config.set("SUITE_ID", suite_id)
+
         self.iut_provider = self.registry.iut_provider(suite_id)
         self.log_area_provider = self.registry.log_area_provider(suite_id)
         self.execution_space_provider = self.registry.execution_space_provider(suite_id)
@@ -119,7 +121,6 @@ class EnvironmentProvider:  # pylint:disable=too-many-instance-attributes
             "WAIT_FOR_LOG_AREA_TIMEOUT",
             int(os.getenv("ETOS_WAIT_FOR_LOG_AREA_TIMEOUT", "10")),
         )
-        self.etos.config.set("SUITE_ID", suite_id)
 
         self.etos.config.rabbitmq_publisher_from_environment()
         self.etos.start_publisher()
@@ -156,6 +157,7 @@ class EnvironmentProvider:  # pylint:disable=too-many-instance-attributes
             "artifact_published", self.environment_provider_config.artifact_published
         )
         self.dataset.add("tercc", self.environment_provider_config.tercc)
+        self.dataset.add("dataset", self.registry.dataset(suite_id))
         self.dataset.merge(self.registry.dataset(suite_id))
 
     def cleanup(self):
