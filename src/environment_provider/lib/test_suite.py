@@ -154,8 +154,12 @@ class TestSuite:
         setattr(self, name, value)
         self._suite[name] = value
 
-    def generate(self):
-        """Generate an ETOS test suite definition."""
+    def generate(self, suite_runner_id):
+        """Generate an ETOS test suite definition.
+
+        :param suite_runner_id: Correlation ID for the suite runner.
+        :type suite_runner_id: str
+        """
         counter = 0
         suites = []
         for test_runner, data in self.test_runners.items():
@@ -163,6 +167,7 @@ class TestSuite:
                 sub_suite = {
                     "name": f"{self.test_suite_name}_SubSuite_{counter}",
                     "suite_id": self.environment_provider_config.tercc_id,
+                    "test_suite_started_id": suite_runner_id,
                     "priority": data.get("priority"),
                     "recipes": suite.get("recipes", []),
                     "test_runner": test_runner,
@@ -178,7 +183,7 @@ class TestSuite:
                 )
                 suites.append(sub_suite)
                 counter += 1
-        self._suite = {"suite_name": self.test_suite_name, "suites": suites}
+        self._suite = {"suite_name": self.test_suite_name, "sub_suites": suites}
 
     def to_json(self):
         """Return test suite as a JSON dictionary."""
