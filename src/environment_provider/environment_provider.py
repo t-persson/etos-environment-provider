@@ -25,7 +25,7 @@ from etos_lib.etos import ETOS
 from etos_lib.lib.database import Database
 from etos_lib.logging.logger import FORMAT_CONFIG
 from jsontas.jsontas import JsonTas
-from environment_provider.splitter.split import Splitter
+from .splitter.split import Splitter
 from .lib.celery import APP
 from .lib.config import Config
 from .lib.test_suite import TestSuite
