@@ -1,4 +1,4 @@
-# Copyright 2020-2021 Axis Communications AB.
+# Copyright 2020-2022 Axis Communications AB.
 #
 # For a full list of individual contributors, please see the commit history.
 #
@@ -19,6 +19,7 @@ import uuid
 import logging
 import traceback
 import json
+import time
 from threading import Lock
 from copy import deepcopy
 from etos_lib.etos import ETOS
@@ -27,6 +28,7 @@ from etos_lib.logging.logger import FORMAT_CONFIG
 from jsontas.jsontas import JsonTas
 from .splitter.split import Splitter
 from .lib.celery import APP
+from .lib.graphql import request_main_suite
 from .lib.config import Config
 from .lib.test_suite import TestSuite
 from .lib.registry import ProviderRegistry
@@ -368,7 +370,7 @@ class EnvironmentProvider:  # pylint:disable=too-many-instance-attributes
             event = self.etos.events.send_environment_defined(
                 sub_suite.get("name"),
                 uri=f"{base_url}/sub_suite?id={identifier}",
-                links={"CONTEXT": self.dataset.get("context")},
+                links={"CONTEXT": self.etos.config.get("environment_provider_context")},
             )
             database.write(event.meta.event_id, identifier)
             database.writer.hset(
@@ -378,68 +380,137 @@ class EnvironmentProvider:  # pylint:disable=too-many-instance-attributes
                 f"SubSuite:{identifier}", "Suite", json.dumps(sub_suite)
             )
 
-    def run(self):
+    def checkout(self, test_suite_name, test_runners, dataset, main_suite_id):
+        """Checkout an environment for a test suite.
+
+        :param test_suite_name: Name of the test suite.
+        :type test_suite_name: str
+        :param test_runners: The test runners and corresponding unassigned tests.
+        :type test_runners: dict
+        :param dataset: The dataset for this particular checkout.
+        :type dataset: dict
+        :param main_suite_id: The ID of the main suite that initiated this checkout.
+        :type main_suite_id: str
+        :return: The test suite and environment json for this checkout.
+        :rtype: dict
+        """
+        self.new_dataset(dataset)
+
+        self.set_total_test_count_and_test_runners(test_runners)
+        self.logger.info(
+            "Total test count : %r", self.etos.config.get("TOTAL_TEST_COUNT")
+        )
+        self.logger.info(
+            "Total testrunners: %r",
+            self.etos.config.get("NUMBER_OF_TESTRUNNERS"),
+        )
+
+        self.checkout_and_assign_iuts_to_test_runners(test_runners)
+        for test_runner, values in test_runners.items():
+            self.checkout_and_assign_executors_to_iuts(test_runner, values["iuts"])
+            for iut in self.checkin_iuts_without_executors(values["iuts"]):
+                values["iuts"].remove(iut)
+
+        for sub_suite in test_runners.values():
+            self.splitter.split(sub_suite)
+
+        test_suite = TestSuite(
+            test_suite_name, test_runners, self.environment_provider_config
+        )
+        # This is where the resulting test suite is generated.
+        # The resulting test suite will be a dictionary with test runners, IUTs
+        # execution spaces and log areas with tests split up over as many as
+        # possible. The resulting test suite definition is further explained in
+        # :obj:`environment_provider.lib.test_suite.TestSuite`
+        test_suite.generate(main_suite_id)
+        test_suite_json = test_suite.to_json()
+
+        # Test that the test suite JSON is serializable so that the
+        # exception is caught here and not by the webserver.
+        # This makes sure that we can cleanup if anything breaks.
+        self.verify_json(test_suite_json)
+
+        return test_suite_json
+
+    def wait_for_main_suite(self, test_suite_id):
+        """Wait for main test suite started to be available in ER.
+
+        :param test_suite_id: The ID of the test suite started.
+        :type test_suite_id: str
+        :return: a test suite started event.
+        :rtype: dict
+        """
+        main_suite = request_main_suite(self.etos, test_suite_id)
+        timeout = time.time() + 30
+        while main_suite is None and time.time() < timeout:
+            main_suite = request_main_suite(self.etos, test_suite_id)
+            time.sleep(5)
+        return main_suite
+
+    def _run(self):
         """Run the environment provider task.
 
         :return: Test suite JSON with assigned IUTs, execution spaces and log areas.
         :rtype: dict
         """
         suites = []
+        error = None
+
+        test_suites = self.create_test_suite_dict()
+
+        datasets = self.registry.dataset(self.suite_id)
+        if isinstance(datasets, list):
+            assert len(datasets) == len(
+                test_suites
+            ), "If multiple datasets are provided it must correspond with number of test suites"
+        else:
+            datasets = [datasets] * len(test_suites)
+        for test_suite_name, test_runners in test_suites.items():
+            triggered = None
+            try:
+                main_suite = self.wait_for_main_suite(self.suite_runner_ids.pop(0))
+                if main_suite is None:
+                    raise TimeoutError(
+                        "Timed out while waiting for test suite started from ESR"
+                    )
+                main_suite_id = main_suite["meta"]["id"]
+
+                triggered = self.etos.events.send_activity_triggered(
+                    f"Checkout environment for {test_suite_name}",
+                    {"CONTEXT": main_suite_id},
+                    executionType="AUTOMATED",
+                )
+                self.etos.config.set("environment_provider_context", triggered)
+                self.etos.events.send_activity_started(triggered)
+                dataset = datasets.pop(0)
+                test_suite_json = self.checkout(
+                    test_suite_name, test_runners, dataset, main_suite_id
+                )
+                self.send_environment_events(test_suite_json)
+                suites.append(test_suite_json)
+            except Exception as exception:  # pylint:disable=broad-except
+                error = exception
+                raise
+            finally:
+                if error is None:
+                    outcome = {"conclusion": "SUCCESSFUL"}
+                else:
+                    outcome = {"conclusion": "UNSUCCESSFUL", "description": str(error)}
+                if triggered is not None:
+                    self.etos.events.send_activity_finished(triggered, outcome)
+        return {"suites": suites, "error": None}
+
+    def run(self):
+        """Run the environment provider task.
+
+        See: `_run`
+
+        :return: Test suite JSON with assigned IUTs, execution spaces and log areas.
+        :rtype: dict
+        """
         try:
             self.configure(self.suite_id)
-            test_suites = self.create_test_suite_dict()
-
-            datasets = self.registry.dataset(self.suite_id)
-            if isinstance(datasets, list):
-                assert len(datasets) == len(
-                    test_suites
-                ), "If multiple datasets are provided it must correspond with number of test suites"
-            else:
-                datasets = [datasets] * len(test_suites)
-            for test_suite_name, test_runners in test_suites.items():
-                dataset = datasets.pop(0)
-                self.new_dataset(dataset)
-
-                self.set_total_test_count_and_test_runners(test_runners)
-                self.logger.info(
-                    "Total test count : %r", self.etos.config.get("TOTAL_TEST_COUNT")
-                )
-                self.logger.info(
-                    "Total testrunners: %r",
-                    self.etos.config.get("NUMBER_OF_TESTRUNNERS"),
-                )
-
-                self.checkout_and_assign_iuts_to_test_runners(test_runners)
-                for test_runner, values in test_runners.items():
-                    self.checkout_and_assign_executors_to_iuts(
-                        test_runner, values["iuts"]
-                    )
-                    for iut in self.checkin_iuts_without_executors(values["iuts"]):
-                        values["iuts"].remove(iut)
-
-                for sub_suite in test_runners.values():
-                    self.splitter.split(sub_suite)
-
-                test_suite = TestSuite(
-                    test_suite_name, test_runners, self.environment_provider_config
-                )
-                # This is where the resulting test suite is generated.
-                # The resulting test suite will be a dictionary with test runners, IUTs
-                # execution spaces and log areas with tests split up over as many as
-                # possible. The resulting test suite definition is further explained in
-                # :obj:`environment_provider.lib.test_suite.TestSuite`
-                test_suite.generate(self.suite_runner_ids.pop(0))
-                test_suite_json = test_suite.to_json()
-
-                # Test that the test suite JSON is serializable so that the
-                # exception is caught here and not by the webserver.
-                # This makes sure that we can cleanup if anything breaks.
-                self.verify_json(test_suite_json)
-
-                self.send_environment_events(test_suite_json)
-
-                suites.append(test_suite_json)
-            return {"suites": suites, "error": None}
+            return self._run()
         except Exception as exception:  # pylint:disable=broad-except
             self.cleanup()
             traceback.print_exc()

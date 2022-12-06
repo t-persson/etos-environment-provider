@@ -66,6 +66,7 @@ class ExternalProvider:
         self.dataset = jsontas.dataset
         self.ruleset = ruleset
         self.id = self.ruleset.get("id")  # pylint:disable=invalid-name
+        self.context = self.etos.config.get("environment_provider_context")
         self.identifier = self.etos.config.get("SUITE_ID")
         self.logger.info("Initialized external IUT provider %r", self.id)
 
@@ -289,5 +290,44 @@ class ExternalProvider:
             raise
         return iuts
 
-    # Compatibility with the JSONTas providers.
-    wait_for_and_checkout_iuts = request_and_wait_for_iuts
+    def wait_for_and_checkout_iuts(self, minimum_amount=0, maximum_amount=100):
+        """Wait for IUTs from an external IUT provider.
+
+        See: `request_and_wait_for_iuts`
+
+        :raises: IutNotAvailable: If there are no available IUTs.
+
+        :param minimum_amount: Minimum amount of IUTs to checkout.
+        :type minimum_amount: int
+        :param maximum_amount: Maximum amount of IUTs to checkout.
+        :type maximum_amount: int
+        :return: List of checked out IUTs.
+        :rtype: list
+        """
+        error = None
+        triggered = None
+        try:
+            triggered = self.etos.events.send_activity_triggered(
+                f"Checkout IUTs from {self.id}",
+                {"CONTEXT": self.context},
+                executionType="AUTOMATED",
+                categories=["EnvironmentProvider", "IUTProvider", "External"],
+                triggers=[
+                    {
+                        "type": "OTHER",
+                        "description": f"Checking out IUTs",
+                    }
+                ],
+            )
+            self.etos.events.send_activity_started(triggered)
+            return self.request_and_wait_for_iuts(minimum_amount, maximum_amount)
+        except Exception as exception:
+            error = exception
+            raise
+        finally:
+            if error is None:
+                outcome = {"conclusion": "SUCCESSFUL"}
+            else:
+                outcome = {"conclusion": "UNSUCCESSFUL", "description": str(error)}
+            if triggered is not None:
+                self.etos.events.send_activity_finished(triggered, outcome)

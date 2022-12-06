@@ -65,6 +65,7 @@ class ExternalProvider:
         self.dataset = jsontas.dataset
         self.ruleset = ruleset
         self.id = self.ruleset.get("id")  # pylint:disable=invalid-name
+        self.context = self.etos.config.get("environment_provider_context")
         self.identifier = self.etos.config.get("SUITE_ID")
         self.logger.info("Initialized external log area provider %r", self.id)
 
@@ -290,5 +291,44 @@ class ExternalProvider:
             raise
         return log_areas
 
-    # Compatibility with the JSONTas providers.
-    wait_for_and_checkout_log_areas = request_and_wait_for_log_areas
+    def wait_for_and_checkout_log_areas(self, minimum_amount=0, maximum_amount=100):
+        """Wait for log areas from an external log area provider.
+
+        See: `request_and_wait_for_log_areas`
+
+        :raises: LogAreaNotAvailable: If there are not available log areas after timeout.
+
+        :param minimum_amount: Minimum amount of log areas to checkout.
+        :type minimum_amount: int
+        :param maximum_amount: Maximum amount of log areas to checkout.
+        :type maximum_amount: int
+        :return: List of checked out log areas.
+        :rtype: list
+        """
+        error = None
+        triggered = None
+        try:
+            triggered = self.etos.events.send_activity_triggered(
+                f"Checkout log areas from {self.id}",
+                {"CONTEXT": self.context},
+                executionType="AUTOMATED",
+                categories=["EnvironmentProvider", "LogAreaProvider", "External"],
+                triggers=[
+                    {
+                        "type": "OTHER",
+                        "description": f"Checking out log areas",
+                    }
+                ],
+            )
+            self.etos.events.send_activity_started(triggered)
+            return self.request_and_wait_for_log_areas(minimum_amount, maximum_amount)
+        except Exception as exception:
+            error = exception
+            raise
+        finally:
+            if error is None:
+                outcome = {"conclusion": "SUCCESSFUL"}
+            else:
+                outcome = {"conclusion": "UNSUCCESSFUL", "description": str(error)}
+            if triggered is not None:
+                self.etos.events.send_activity_finished(triggered, outcome)
