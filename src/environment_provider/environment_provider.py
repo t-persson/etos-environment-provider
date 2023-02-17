@@ -482,7 +482,6 @@ class EnvironmentProvider:  # pylint:disable=too-many-instance-attributes
                 test_suite_json = self.checkout(
                     test_suite_name, test_runners, dataset, main_suite_id
                 )
-                # self.send_environment_events(test_suite_json)
                 suites.append(test_suite_json)
             except Exception as exception:  # pylint:disable=broad-except
                 error = exception
