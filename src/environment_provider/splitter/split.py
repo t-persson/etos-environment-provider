@@ -1,4 +1,4 @@
-# Copyright 2020 Axis Communications AB.
+# Copyright 2020-2023 Axis Communications AB.
 #
 # For a full list of individual contributors, please see the commit history.
 #
@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """ETOS Environment Provider splitter module."""
+import time
 from copy import deepcopy
 
 
@@ -74,14 +75,11 @@ class Splitter:
         """
         iuts = deepcopy(iuts)
         for test_runner in test_runners.values():
-            test_runner.setdefault("iuts", {})
+            test_runner["iuts"] = {}
             test_runner["percentage_of_tests"] = len(
                 test_runner.get("unsplit_recipes")
             ) / self.etos.config.get("TOTAL_TEST_COUNT")
-            number_of_iuts = round(
-                self.etos.config.get("NUMBER_OF_IUTS")
-                * test_runner["percentage_of_tests"]
-            )
+            number_of_iuts = round(len(iuts) * test_runner["percentage_of_tests"])
             if not number_of_iuts:
                 number_of_iuts = 1
 
@@ -92,6 +90,7 @@ class Splitter:
             test_runner["number_of_iuts"] = number_of_iuts
 
         while True:
+            time.sleep(0.01)
             try:
                 for test_runner in test_runners.values():
                     if len(test_runner.get("iuts")) >= test_runner["number_of_iuts"]:
