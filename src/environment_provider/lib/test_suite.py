@@ -127,70 +127,62 @@ class TestSuite:
     """
 
     def __init__(
-        self, test_suite_name, test_runners, environment_provider_config, database
+        self, test_suite_name, suite_runner_id, environment_provider_config, database
     ):
         """Initialize test suite representation.
 
         :param test_suite_name: Name of the test suite.
         :type test_suite_name: str
-        :param test_runners: Dictionary of test runners and tests.
-        :type test_runners: dict
+        :param suite_runner_id: The test suite started that this suite correlates to.
+        :type suite_runner_id: str
         :param environment_provider_config: Environment provider config.
         :type environment_provider_config: :obj:`environment_provider.lib.config.Config`
         :param database: Database class to use.
         :type database: class
         """
-        self._suite = {}
+        self._suite = {"suite_name": test_suite_name, "sub_suites": []}
         self.test_suite_name = test_suite_name
-        self.test_runners = test_runners
+        self.suite_runner_id = suite_runner_id
         self.environment_provider_config = environment_provider_config
         self.expiry = 172800  # 48h
         self.database = database
 
-    def add(self, name, value):
-        """Add a new item to suite.
+    def add(self, test_runner, iut, suite, priority):
+        """Add a new sub suite to suite.
 
-        :param name: Name of item to add.
-        :type name: str
-        :param value: Value of item.
-        :type value: any
+        :param test_runner: The test runner to use for sub suite.
+        :type test_runner: str
+        :param iut: IUT to execute the sub suite.
+        :type iut: :obj:`iut_provider.iut`
+        :param suite: The sub suite.
+        :type suite: dict
+        :param priority: Execution priority of the sub suite.
+        :type priority: int
+        :return: The sub suite definition to be sent to the ESR.
+        :rtype: dict
         """
-        setattr(self, name, value)
-        self._suite[name] = value
-
-    def generate(self, suite_runner_id):
-        """Generate an ETOS test suite definition.
-
-        :param suite_runner_id: Correlation ID for the suite runner.
-        :type suite_runner_id: str
-        """
-        counter = 0
-        suites = []
-        for test_runner, data in self.test_runners.items():
-            for iut, suite in data.get("iuts", {}).items():
-                sub_suite = {
-                    "name": f"{self.test_suite_name}_SubSuite_{counter}",
-                    "suite_id": self.environment_provider_config.tercc_id,
-                    "test_suite_started_id": suite_runner_id,
-                    "priority": data.get("priority"),
-                    "recipes": suite.get("recipes", []),
-                    "test_runner": test_runner,
-                    "iut": iut.as_dict,
-                    "artifact": self.environment_provider_config.artifact_id,
-                    "context": self.environment_provider_config.context,
-                    "executor": suite.get("executor").as_dict,
-                    "log_area": suite.get("log_area").as_dict,
-                }
-                self.database.write(
-                    sub_suite["executor"]["instructions"]["identifier"],
-                    json.dumps(sub_suite),
-                )
-                self.database.writer.expire(
-                    sub_suite["executor"]["instructions"]["identifier"], self.expiry
-                )
-                suites.append(sub_suite)
-                counter += 1
-        self._suite = {"suite_name": self.test_suite_name, "sub_suites": suites}
+        sub_suite = {
+            "name": f"{self.test_suite_name}_SubSuite_{len(self._suite['sub_suites'])}",
+            "suite_id": self.environment_provider_config.tercc_id,
+            "test_suite_started_id": self.suite_runner_id,
+            "priority": priority,
+            "recipes": suite.get("recipes", []),
+            "test_runner": test_runner,
+            "iut": iut.as_dict,
+            "artifact": self.environment_provider_config.artifact_id,
+            "context": self.environment_provider_config.context,
+            "executor": suite.get("executor").as_dict,
+            "log_area": suite.get("log_area").as_dict,
+        }
+        self.database.write(
+            sub_suite["executor"]["instructions"]["identifier"],
+            json.dumps(sub_suite),
+        )
+        self.database.writer.expire(
+            sub_suite["executor"]["instructions"]["identifier"], self.expiry
+        )
+        self._suite["sub_suites"].append(sub_suite)
+        return sub_suite
 
     def to_json(self):
         """Return test suite as a JSON dictionary."""

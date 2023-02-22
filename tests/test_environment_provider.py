@@ -53,6 +53,26 @@ IUT_PROVIDER = {
 }
 
 
+IUT_PROVIDER_SINGLE = {
+    "iut": {
+        "id": "only_one",
+        "list": {
+            "possible": [
+                {
+                    "type": "$identity.type",
+                    "namespace": "$identity.namespace",
+                    "name": "$identity.name",
+                    "version": "$identity.version",
+                    "qualifiers": "$identity.qualifiers",
+                    "subpath": "$identity.subpath",
+                }
+            ],
+            "available": "$this.possible",
+        },
+    }
+}
+
+
 EXECUTION_SPACE_PROVIDER = {
     "execution_space": {
         "id": "default",
@@ -224,6 +244,59 @@ class TestEnvironmentProvider(unittest.TestCase):
         database.write(f"EnvironmentProvider:{suite_id}Dataset", json.dumps({}))
         database.write(
             f"EnvironmentProvider:{suite_id}IUTProvider", json.dumps(IUT_PROVIDER)
+        )
+        database.write(
+            f"EnvironmentProvider:{suite_id}ExecutionSpaceProvider",
+            json.dumps(EXECUTION_SPACE_PROVIDER),
+        )
+        database.write(
+            f"EnvironmentProvider:{suite_id}LogAreaProvider",
+            json.dumps(LOG_AREA_PROVIDER),
+        )
+
+        handler = functools.partial(GraphQLHandler, tercc)
+
+        self.logger.info("STEP: Start up a fake server.")
+        with FakeServer(None, None, handler) as server:
+            os.environ["ETOS_GRAPHQL_SERVER"] = server.host
+            os.environ["ETOS_ENVIRONMENT_PROVIDER"] = server.host
+            os.environ["ETOS_API"] = server.host
+
+            self.logger.info("STEP: Run the environment provider.")
+            result = get_environment(suite_id, suite_runner_ids, database)
+        self.assertIsNone(result.get("error"))
+
+        self.logger.info("STEP: Verify that two environments were sent.")
+        environments = []
+        for event in Debug().events_published:
+            if event.meta.type == "EiffelEnvironmentDefinedEvent":
+                environments.append(event)
+        self.assertEqual(len(environments), 2)
+
+    def test_get_environment_sub_suites_sequential(self):
+        """Test environment provider with 2 different sub suites sequentially.
+
+        Approval criteria:
+            - The environment provider shall provide 2 environments for 2 sub suites.
+
+        Test steps:
+            1. Register an IUT provider providing only 1 IUT.
+            2. Start up a fake server.
+            3. Run the environment provider.
+            4. Verify that two environments were sent.
+        """
+        tercc = TERCC_SUB_SUITES
+
+        suite_id = tercc["meta"]["id"]
+        suite_runner_ids = ["14ffc8d7-572a-4f2f-9382-923de2bcf50a"]
+
+        database = FakeDatabase()
+        database.write(f"EnvironmentProvider:{suite_id}", json.dumps(tercc))
+        database.write(f"EnvironmentProvider:{suite_id}Dataset", json.dumps({}))
+        self.logger.info("STEP: Register an IUT provider providing only 1 IUT.")
+        database.write(
+            f"EnvironmentProvider:{suite_id}IUTProvider",
+            json.dumps(IUT_PROVIDER_SINGLE),
         )
         database.write(
             f"EnvironmentProvider:{suite_id}ExecutionSpaceProvider",
