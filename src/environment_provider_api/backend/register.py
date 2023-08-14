@@ -25,7 +25,7 @@ def get_iut_provider(request):
     :return: An IUT provider from request.
     :rtype: dict or None
     """
-    return json_to_dict(request.media.get("iut_provider"))
+    return json_to_dict(request.get_media().get("iut_provider"))
 
 
 def get_log_area_provider(request):
@@ -36,7 +36,7 @@ def get_log_area_provider(request):
     :return: A log area provider from request.
     :rtype: dict or None
     """
-    return json_to_dict(request.media.get("log_area_provider"))
+    return json_to_dict(request.get_media().get("log_area_provider"))
 
 
 def get_execution_space_provider(request):
@@ -47,7 +47,7 @@ def get_execution_space_provider(request):
     :return: An execution space provider from request.
     :rtype: dict or None
     """
-    return json_to_dict(request.media.get("execution_space_provider"))
+    return json_to_dict(request.get_media().get("execution_space_provider"))
 
 
 def register(

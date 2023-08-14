@@ -357,7 +357,7 @@ class SubSuite:  # pylint:disable=too-few-public-methods
         response.media = suite
 
 
-FALCON_APP = falcon.API(middleware=[RequireJSON(), JSONTranslator()])
+FALCON_APP = falcon.App(middleware=[RequireJSON(), JSONTranslator()])
 WEBSERVER = Webserver(Database, APP)
 CONFIGURE = Configure(Database)
 REGISTER = Register(Database)

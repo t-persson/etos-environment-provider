@@ -197,7 +197,10 @@ def check_environment_status(celery_worker, environment_id):
     task_result = celery_worker.AsyncResult(environment_id)
     result = task_result.result
     status = task_result.status
-    if result and result.get("error") is not None:
+    if isinstance(result, Exception):
+        status = "FAILURE"
+        result = str(result)
+    elif result and result.get("error") is not None:
         status = "FAILURE"
     if result:
         task_result.get()

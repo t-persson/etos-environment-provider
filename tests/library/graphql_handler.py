@@ -16,8 +16,8 @@
 """Handler for graphql queries."""
 import json
 
-import urllib.parse
 from http.server import BaseHTTPRequestHandler
+from graphql import parse
 
 # pylint:disable=invalid-name
 
@@ -44,12 +44,16 @@ class GraphQLHandler(BaseHTTPRequestHandler):
 
         :param request_data: Data to parse query string from.
         :type request_data: byte
-        :return: The GraphQL query string.
+        :return: The GraphQL query name.
         :rtype: str
         """
-        data_dict = urllib.parse.parse_qs(request_data)
-        data_str = data_dict[b"query"][0].decode("utf-8")
-        return data_str.splitlines()[1].lstrip(" ").rstrip()
+        data_dict = json.loads(request_data)
+        parsed = parse(data_dict["query"]).to_dict()
+        for definition in parsed.get("definitions", []):
+            for selection in definition.get("selection_set", {}).get("selections", []):
+                query_name = selection.get("name", {}).get("value")
+                return query_name
+        raise TypeError("Not a valid GraphQL query")
 
     def test_execution_recipe_collection_created(self):
         """Create a fake tercc event.
@@ -140,15 +144,15 @@ class GraphQLHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         """Handle graphql post requests for the environment provider tests."""
         request_data = self.rfile.read(int(self.headers["Content-Length"]))
-        query = self.get_gql_query(request_data)
+        query_name = self.get_gql_query(request_data)
 
-        if query.startswith("testExecutionRecipeCollectionCreated"):
+        if query_name == "testExecutionRecipeCollectionCreated":
             response = self.test_execution_recipe_collection_created()
-        elif query.startswith("activityTriggered"):
+        elif query_name == "activityTriggered":
             response = self.activity_triggered()
-        elif query.startswith("artifactPublished"):
+        elif query_name == "artifactPublished":
             response = self.artifact_published()
-        elif query.startswith("testSuiteStarted"):
+        elif query_name == "testSuiteStarted":
             response = self.test_suite_started()
         else:
             response = None

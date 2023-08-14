@@ -45,4 +45,6 @@ if PASSWORD:
 else:
     APP.conf.broker_transport_options = {"master_name": "mymaster"}
     APP.conf.result_backend_transport_options = {"master_name": "mymaster"}
+APP.conf.broker_connection_retry = True
+APP.conf.broker_connection_retry_on_startup = True
 APP.conf.worker_hijack_root_logger = False

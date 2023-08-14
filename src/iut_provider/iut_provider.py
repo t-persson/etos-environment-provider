@@ -22,6 +22,8 @@ from .utilities.jsontas_provider import JSONTasProvider
 class IutProvider:
     """Item under test (IUT) provider."""
 
+    id = "Undefined"
+
     def __new__(cls, etos, jsontas, ruleset):
         """Check which type of provider and return an appropriate one."""
         if ruleset.get("type", "jsontas") == "external":

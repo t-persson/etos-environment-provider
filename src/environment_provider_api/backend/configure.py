@@ -25,7 +25,7 @@ def get_iut_provider_id(request):
     :return: An IUT provider ID.
     :rtype: str
     """
-    return request.media.get("iut_provider")
+    return request.get_media().get("iut_provider")
 
 
 def get_execution_space_provider_id(request):
@@ -36,7 +36,7 @@ def get_execution_space_provider_id(request):
     :return: An IUT provider ID.
     :rtype: str
     """
-    return request.media.get("execution_space_provider")
+    return request.get_media().get("execution_space_provider")
 
 
 def get_log_area_provider_id(request):
@@ -47,7 +47,7 @@ def get_log_area_provider_id(request):
     :return: An IUT provider ID.
     :rtype: str
     """
-    return request.media.get("log_area_provider")
+    return request.get_media().get("log_area_provider")
 
 
 def get_dataset(request):
@@ -58,7 +58,7 @@ def get_dataset(request):
     :return: An IUT provider ID.
     :rtype: dict
     """
-    dataset = request.media.get("dataset")
+    dataset = request.get_media().get("dataset")
     if dataset is not None:
         if not isinstance(dataset, (dict, list)):
             dataset = json.loads(dataset)
