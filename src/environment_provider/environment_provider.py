@@ -20,6 +20,7 @@ import logging
 import traceback
 import json
 import time
+from datetime import datetime
 from threading import Lock
 from copy import deepcopy
 from etos_lib.etos import ETOS
@@ -323,6 +324,29 @@ class EnvironmentProvider:  # pylint:disable=too-many-instance-attributes
         """
         return self.log_area_provider.wait_for_and_checkout_log_areas(1, 1)[0]
 
+    def checkout_timeout(self):
+        """Get timeout for checkout."""
+        timeout = (
+            self.etos.config.get("WAIT_FOR_IUT_TIMEOUT")
+            + self.etos.config.get("WAIT_FOR_EXECUTION_SPACE_TIMEOUT")
+            + self.etos.config.get("WAIT_FOR_LOG_AREA_TIMEOUT")
+            + 10
+        )
+        minutes, seconds = divmod(timeout, 60)
+        hours, minutes = divmod(minutes, 60)
+
+        endtime = time.time() + timeout
+        strtime = datetime.fromtimestamp(endtime).strftime("%Y-%m-%d %H:%M:%S")
+        self.logger.info(
+            "Timeout for checkout at: %s (%sh %sm %ss)",
+            strtime,
+            hours,
+            minutes,
+            seconds,
+            extra={"user_log": True},
+        )
+        return endtime
+
     def checkout(self, test_suite_name, test_runners, dataset, main_suite_id):
         """Checkout an environment for a test suite.
 
@@ -367,15 +391,6 @@ class EnvironmentProvider:  # pylint:disable=too-many-instance-attributes
             extra={"user_log": True},
         )
 
-        timeout = (
-            self.etos.config.get("WAIT_FOR_IUT_TIMEOUT")
-            + self.etos.config.get("WAIT_FOR_EXECUTION_SPACE_TIMEOUT")
-            + self.etos.config.get("WAIT_FOR_LOG_AREA_TIMEOUT")
-            + 10
-        )
-        endtime = time.time() + timeout
-        self.logger.info("Total timeout for checkout: %ds", timeout, extra={"user_log": True})
-
         test_suite = TestSuite(
             test_suite_name,
             main_suite_id,
@@ -383,7 +398,8 @@ class EnvironmentProvider:  # pylint:disable=too-many-instance-attributes
             self.database,
         )
         finished = []
-        while time.time() < endtime:
+        timeout = self.checkout_timeout()
+        while time.time() < timeout:
             self.set_total_test_count_and_test_runners(test_runners)
             # Check out and assign IUTs to test runners.
             iuts = self.iut_provider.wait_for_and_checkout_iuts(

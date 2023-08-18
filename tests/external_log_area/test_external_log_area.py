@@ -270,7 +270,7 @@ class TestExternalLogArea(unittest.TestCase):
             self.logger.info("STEP: Send a stop request that fails.")
             with self.assertRaises(LogAreaCheckinFailed):
                 self.logger.info(
-                    "STEP: Verify that the checkin method raises LogAreaCheckinFailed " "exception."
+                    "STEP: Verify that the checkin method raises LogAreaCheckinFailed exception."
                 )
                 provider.checkin(log_area)
 
