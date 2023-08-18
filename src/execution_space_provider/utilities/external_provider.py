@@ -93,17 +93,11 @@ class ExternalProvider:
         end = int(end)
 
         if not isinstance(execution_space, list):
-            self.logger.debug(
-                "Check in execution space %r (timeout %ds)", execution_space, end
-            )
+            self.logger.debug("Check in execution space %r (timeout %ds)", execution_space, end)
             execution_space = [execution_space]
         else:
-            self.logger.debug(
-                "Check in execution spaces %r (timeout %ds)", execution_space, end
-            )
-        execution_spaces = [
-            execution_space.as_dict for execution_space in execution_space
-        ]
+            self.logger.debug("Check in execution spaces %r (timeout %ds)", execution_space, end)
+        execution_spaces = [execution_space.as_dict for execution_space in execution_space]
 
         host = self.ruleset.get("stop", {}).get("host")
         timeout = time.time() + end
@@ -122,8 +116,7 @@ class ExternalProvider:
                 response = response.json()
                 if response.get("error") is not None:
                     raise ExecutionSpaceCheckinFailed(
-                        f"Unable to check in {execution_spaces} "
-                        f"({response.get('error')})"
+                        f"Unable to check in {execution_spaces} " f"({response.get('error')})"
                     )
             except ConnectionError:
                 self.logger.error("Error connecting to %r", host)
@@ -170,12 +163,8 @@ class ExternalProvider:
             for response in response_iterator:
                 return response.get("id")
         except ConnectionError as http_error:
-            self.logger.error(
-                "Could not start external provider due to a connection error"
-            )
-            raise TimeoutError(
-                f"Unable to start external provider {self.id!r}"
-            ) from http_error
+            self.logger.error("Could not start external provider due to a connection error")
+            raise TimeoutError(f"Unable to start external provider {self.id!r}") from http_error
         raise TimeoutError(f"Unable to start external provider {self.id!r}")
 
     def wait(self, provider_id):
@@ -263,9 +252,7 @@ class ExternalProvider:
             for execution_space in response.get("execution_spaces", [])
         ]
 
-    def request_and_wait_for_execution_spaces(
-        self, minimum_amount=0, maximum_amount=100
-    ):
+    def request_and_wait_for_execution_spaces(self, minimum_amount=0, maximum_amount=100):
         """Wait for execution spaces from an external execution space provider.
 
         :raises: ExecutionSpaceNotAvailable: If there are no available execution spaces after
@@ -302,9 +289,7 @@ class ExternalProvider:
             raise
         return execution_spaces
 
-    def wait_for_and_checkout_execution_spaces(
-        self, minimum_amount=0, maximum_amount=100
-    ):
+    def wait_for_and_checkout_execution_spaces(self, minimum_amount=0, maximum_amount=100):
         """Wait for execution spaces from an external execution space provider.
 
         See: `request_and_wait_for_execution_spaces`
@@ -339,9 +324,7 @@ class ExternalProvider:
                 ],
             )
             self.etos.events.send_activity_started(triggered)
-            return self.request_and_wait_for_execution_spaces(
-                minimum_amount, maximum_amount
-            )
+            return self.request_and_wait_for_execution_spaces(minimum_amount, maximum_amount)
         except Exception as exception:
             error = exception
             raise

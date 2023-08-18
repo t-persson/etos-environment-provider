@@ -75,6 +75,5 @@ class List:  # pylint:disable=too-few-public-methods
         if not available_iuts:
             raise IutNotAvailable()
         return [
-            Iut(provider_id=self.id, identity=identity, **iut)
-            for iut in available_iuts[:amount]
+            Iut(provider_id=self.id, identity=identity, **iut) for iut in available_iuts[:amount]
         ]

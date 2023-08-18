@@ -97,9 +97,7 @@ def release_environment(etos, jsontas, provider_registry, sub_suite):
     """
     etos.config.set("SUITE_ID", sub_suite.get("suite_id"))
     iut = sub_suite.get("iut")
-    iut_ruleset = provider_registry.get_iut_provider_by_id(iut.get("provider_id")).get(
-        "iut"
-    )
+    iut_ruleset = provider_registry.get_iut_provider_by_id(iut.get("provider_id")).get("iut")
     executor = sub_suite.get("executor")
     executor_ruleset = provider_registry.get_execution_space_provider_by_id(
         executor.get("provider_id")
@@ -110,9 +108,7 @@ def release_environment(etos, jsontas, provider_registry, sub_suite):
     ).get("log")
 
     failure = None
-    success, exception = checkin_provider(
-        Iut(**iut), IutProvider(etos, jsontas, iut_ruleset)
-    )
+    success, exception = checkin_provider(Iut(**iut), IutProvider(etos, jsontas, iut_ruleset))
     if not success:
         failure = exception
 
@@ -155,16 +151,12 @@ def release_full_environment(
     for suite in task_result.result.get("suites", {}):
         for sub_suite in suite.get("sub_suites", []):
             try:
-                identifier = (
-                    f"SubSuite:{sub_suite['executor']['instructions']['identifier']}"
-                )
+                identifier = f"SubSuite:{sub_suite['executor']['instructions']['identifier']}"
             except KeyError:
                 identifier = None
             if identifier is not None:
                 event_id = provider_registry.database.reader.hget(identifier, "EventID")
-                event_suite = provider_registry.database.reader.hget(
-                    identifier, "Suite"
-                )
+                event_suite = provider_registry.database.reader.hget(identifier, "Suite")
                 # Has already been checked in.
                 if not event_suite:
                     continue

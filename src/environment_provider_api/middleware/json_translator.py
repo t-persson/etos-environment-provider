@@ -29,6 +29,4 @@ class JSONTranslator:
 
         body = req.media
         if not body:
-            raise falcon.HTTPBadRequest(
-                "Empty request body", "A valid JSON document is required."
-            )
+            raise falcon.HTTPBadRequest("Empty request body", "A valid JSON document is required.")

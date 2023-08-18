@@ -147,13 +147,9 @@ class TestEnvironment(unittest.TestCase):
         environment = Webserver(database, celery_worker)
         environment.on_get(request, response)
 
-        self.logger.info(
-            "STEP: Verify that the status for the environment was returned."
-        )
+        self.logger.info("STEP: Verify that the status for the environment was returned.")
         self.assertEqual(response.status, falcon.HTTP_200)
-        self.assertDictEqual(
-            response.media, {"status": test_status, "result": test_result}
-        )
+        self.assertDictEqual(response.media, {"status": test_status, "result": test_result})
 
     @patch("environment_provider_api.backend.environment.get_environment")
     def test_get_environment(self, get_environment_mock):
@@ -188,10 +184,6 @@ class TestEnvironment(unittest.TestCase):
         environment = Webserver(database, celery_worker)
         environment.on_post(request, response)
 
-        self.logger.info(
-            "STEP: Verify that the environment provider gets an environment."
-        )
+        self.logger.info("STEP: Verify that the environment provider gets an environment.")
         self.assertEqual(response.media, {"result": "success", "data": {"id": task_id}})
-        get_environment_mock.delay.assert_called_once_with(
-            suite_id, suite_runner_ids.split(",")
-        )
+        get_environment_mock.delay.assert_called_once_with(suite_id, suite_runner_ids.split(","))

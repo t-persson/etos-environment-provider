@@ -69,9 +69,7 @@ class TestRegister(unittest.TestCase):
         self.logger.info("STEP: Send a register request for new providers.")
         Register(fake_database).on_post(fake_request, fake_response)
 
-        self.logger.info(
-            "STEP: Verify that the new providers were registered in the database."
-        )
+        self.logger.info("STEP: Verify that the new providers were registered in the database.")
         self.assertEqual(fake_response.fake_responses.get("status"), falcon.HTTP_204)
         stored_execution_space_provider = json.loads(
             fake_database.reader.hget(
@@ -90,9 +88,7 @@ class TestRegister(unittest.TestCase):
         )
         self.assertDictEqual(stored_log_area_provider, test_log_area_provider)
         stored_iut_provider = json.loads(
-            fake_database.reader.hget(
-                "EnvironmentProvider:IUTProviders", "iut_provider_test"
-            )
+            fake_database.reader.hget("EnvironmentProvider:IUTProviders", "iut_provider_test")
         )
         self.assertDictEqual(stored_iut_provider, test_iut_provider)
 

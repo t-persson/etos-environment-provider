@@ -106,9 +106,7 @@ def configure(
     execution_space_provider = provider_registry.get_execution_space_provider_by_id(
         execution_space_provider_id
     )
-    log_area_provider = provider_registry.get_log_area_provider_by_id(
-        log_area_provider_id
-    )
+    log_area_provider = provider_registry.get_log_area_provider_by_id(log_area_provider_id)
     if not all(
         [
             iut_provider,

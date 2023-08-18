@@ -73,12 +73,8 @@ class GraphQLHandler(BaseHTTPRequestHandler):
                                     {
                                         "links": {
                                             "__typename": "ArtifactCreated",
-                                            "data": {
-                                                "identity": "pkg:test/environment-provider"
-                                            },
-                                            "meta": {
-                                                "id": self.tercc["links"][0]["target"]
-                                            },
+                                            "data": {"identity": "pkg:test/environment-provider"},
+                                            "meta": {"id": self.tercc["links"][0]["target"]},
                                         }
                                     }
                                 ],
@@ -98,13 +94,7 @@ class GraphQLHandler(BaseHTTPRequestHandler):
         return {
             "data": {
                 "activityTriggered": {
-                    "edges": [
-                        {
-                            "node": {
-                                "meta": {"id": "2ec8b7db-1cdd-417a-9cf8-9cec370b117f"}
-                            }
-                        }
-                    ]
+                    "edges": [{"node": {"meta": {"id": "2ec8b7db-1cdd-417a-9cf8-9cec370b117f"}}}]
                 }
             }
         }
@@ -115,11 +105,7 @@ class GraphQLHandler(BaseHTTPRequestHandler):
         :return: A graphql response with an artifact published event.
         :rtype dict
         """
-        return {
-            "data": {
-                "artifactPublished": {"edges": [{"node": {"data": {"locations": []}}}]}
-            }
-        }
+        return {"data": {"artifactPublished": {"edges": [{"node": {"data": {"locations": []}}}]}}}
 
     def test_suite_started(self):
         """Create a fake test suite started to simulate ESR.
@@ -130,13 +116,7 @@ class GraphQLHandler(BaseHTTPRequestHandler):
         return {
             "data": {
                 "testSuiteStarted": {
-                    "edges": [
-                        {
-                            "node": {
-                                "meta": {"id": "3d1cab0e-dacb-4991-afac-7581eea4a3df"}
-                            }
-                        }
-                    ]
+                    "edges": [{"node": {"meta": {"id": "3d1cab0e-dacb-4991-afac-7581eea4a3df"}}}]
                 }
             }
         }

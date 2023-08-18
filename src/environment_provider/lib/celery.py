@@ -30,9 +30,7 @@ if PASSWORD:
 else:
     CELERY_BROKER_URL = f"sentinel://{HOST}:{PORT}"
 
-APP = Celery(
-    "environment_provider", broker=CELERY_BROKER_URL, backend=CELERY_BROKER_URL
-)
+APP = Celery("environment_provider", broker=CELERY_BROKER_URL, backend=CELERY_BROKER_URL)
 if PASSWORD:
     APP.conf.broker_transport_options = {
         "master_name": "mymaster",

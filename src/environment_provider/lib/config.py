@@ -98,9 +98,7 @@ class Config:  # pylint:disable=too-many-instance-attributes
         :rtype: tuple
         """
         try:
-            node_name, node = next(
-                self.__search_for_node_typename(response, node, key=key)
-            )
+            node_name, node = next(self.__search_for_node_typename(response, node, key=key))
             node = node.copy()
             try:
                 node.pop("reverse")
@@ -137,27 +135,19 @@ class Config:  # pylint:disable=too-many-instance-attributes
 
                 try:
                     response = request_tercc(self.etos, self.tercc_id)
-                    node = response["testExecutionRecipeCollectionCreated"]["edges"][0][
-                        "node"
-                    ]
+                    node = response["testExecutionRecipeCollectionCreated"]["edges"][0]["node"]
                     node = node.copy()
                     node.pop("links")
                     self.tercc = node
-                    _, self.artifact_created = self.__get_node(
-                        response, "ArtifactCreated", "links"
-                    )
+                    _, self.artifact_created = self.__get_node(response, "ArtifactCreated", "links")
 
                     response = request_activity_triggered(self.etos, self.tercc_id)
-                    self.activity_triggered = response["activityTriggered"]["edges"][0][
-                        "node"
-                    ]
+                    self.activity_triggered = response["activityTriggered"]["edges"][0]["node"]
 
                     response = request_artifact_published(self.etos, self.artifact_id)
                     # ArtifactPublished is not required and can be None.
                     if response:
-                        self.artifact_published = response["artifactPublished"][
-                            "edges"
-                        ][0]["node"]
+                        self.artifact_published = response["artifactPublished"]["edges"][0]["node"]
                 except:  # noqa, pylint:disable=bare-except
                     pass
                 time.sleep(1)
@@ -226,9 +216,7 @@ class Config:  # pylint:disable=too-many-instance-attributes
                 batch = self.tercc.get("data", {}).get("batches")
                 batch_uri = self.tercc.get("data", {}).get("batchesUri")
                 if batch is not None and batch_uri is not None:
-                    raise ValueError(
-                        "Only one of 'batches' or 'batchesUri' shall be set"
-                    )
+                    raise ValueError("Only one of 'batches' or 'batchesUri' shall be set")
                 if batch is not None:
                     self.__test_suite = batch
                 elif batch_uri is not None:

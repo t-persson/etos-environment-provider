@@ -137,9 +137,7 @@ class TestEnvironmentProvider(unittest.TestCase):
         database = FakeDatabase()
         database.write(f"EnvironmentProvider:{suite_id}", json.dumps(tercc))
         database.write(f"EnvironmentProvider:{suite_id}Dataset", json.dumps({}))
-        database.write(
-            f"EnvironmentProvider:{suite_id}IUTProvider", json.dumps(IUT_PROVIDER)
-        )
+        database.write(f"EnvironmentProvider:{suite_id}IUTProvider", json.dumps(IUT_PROVIDER))
         database.write(
             f"EnvironmentProvider:{suite_id}ExecutionSpaceProvider",
             json.dumps(EXECUTION_SPACE_PROVIDER),
@@ -188,9 +186,7 @@ class TestEnvironmentProvider(unittest.TestCase):
         database = FakeDatabase()
         database.write(f"EnvironmentProvider:{suite_id}", json.dumps(tercc))
         database.write(f"EnvironmentProvider:{suite_id}Dataset", json.dumps({}))
-        database.write(
-            f"EnvironmentProvider:{suite_id}IUTProvider", json.dumps(IUT_PROVIDER)
-        )
+        database.write(f"EnvironmentProvider:{suite_id}IUTProvider", json.dumps(IUT_PROVIDER))
         database.write(
             f"EnvironmentProvider:{suite_id}ExecutionSpaceProvider",
             json.dumps(EXECUTION_SPACE_PROVIDER),
@@ -242,9 +238,7 @@ class TestEnvironmentProvider(unittest.TestCase):
         database = FakeDatabase()
         database.write(f"EnvironmentProvider:{suite_id}", json.dumps(tercc))
         database.write(f"EnvironmentProvider:{suite_id}Dataset", json.dumps({}))
-        database.write(
-            f"EnvironmentProvider:{suite_id}IUTProvider", json.dumps(IUT_PROVIDER)
-        )
+        database.write(f"EnvironmentProvider:{suite_id}IUTProvider", json.dumps(IUT_PROVIDER))
         database.write(
             f"EnvironmentProvider:{suite_id}ExecutionSpaceProvider",
             json.dumps(EXECUTION_SPACE_PROVIDER),

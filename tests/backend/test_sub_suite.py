@@ -45,9 +45,7 @@ class TestSubSuiteBackend(unittest.TestCase):
         request.fake_params["id"] = test_id
         self.logger.info("STEP: Get Suite ID from request via the suite id function.")
         response_id = get_id(request)
-        self.logger.info(
-            "STEP: Verify that the suite id function return the correct ID."
-        )
+        self.logger.info("STEP: Verify that the suite id function return the correct ID.")
         self.assertEqual(test_id, response_id)
 
     def test_suite_id_missing(self):
@@ -63,9 +61,7 @@ class TestSubSuiteBackend(unittest.TestCase):
         request = FakeRequest()
         request.fake_params["id"] = None
         self.logger.info("STEP: Get Suite ID from request via the suite id function.")
-        self.logger.info(
-            "STEP: Verify that the suite id function raises falcon.HTTPBadRequest."
-        )
+        self.logger.info("STEP: Verify that the suite id function raises falcon.HTTPBadRequest.")
         with self.assertRaises(falcon.HTTPBadRequest):
             get_id(request)
 
@@ -86,9 +82,7 @@ class TestSubSuiteBackend(unittest.TestCase):
         database.write("mysuite", json.dumps(test_suite))
         self.logger.info("STEP: Get the sub suite from the subsuite backend.")
         response_suite = get_sub_suite(database, "mysuite")
-        self.logger.info(
-            "STEP: Verify that the sub suite is the one stored in the database."
-        )
+        self.logger.info("STEP: Verify that the sub suite is the one stored in the database.")
         self.assertDictEqual(test_suite, response_suite)
 
     def test_sub_suite_does_not_exist(self):

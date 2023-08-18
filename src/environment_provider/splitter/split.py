@@ -84,9 +84,7 @@ class Splitter:
                 number_of_iuts = 1
 
             number_of_tests = len(test_runner.get("unsplit_recipes"))
-            number_of_iuts = (
-                number_of_tests if number_of_tests < number_of_iuts else number_of_iuts
-            )
+            number_of_iuts = number_of_tests if number_of_tests < number_of_iuts else number_of_iuts
             test_runner["number_of_iuts"] = number_of_iuts
 
         while True:

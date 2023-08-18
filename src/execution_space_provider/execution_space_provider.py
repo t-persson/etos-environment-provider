@@ -45,9 +45,7 @@ class ExecutionSpaceProvider:
         """Check in all checked out execution spaces."""
 
     @abstractmethod
-    def wait_for_and_checkout_execution_spaces(
-        self, minimum_amount=0, maximum_amount=100
-    ):
+    def wait_for_and_checkout_execution_spaces(self, minimum_amount=0, maximum_amount=100):
         """Wait for and checkout execution spaces from an execution space provider.
 
         :raises: ExecutionSpaceNotAvailable: If there are no available execution spaces after

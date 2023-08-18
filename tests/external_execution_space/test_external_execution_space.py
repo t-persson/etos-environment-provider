@@ -76,9 +76,7 @@ class TestExternalExecutionSpace(unittest.TestCase):
             provider = ExternalProvider(etos, jsontas, ruleset)
             self.logger.info("STEP: Send a start request.")
             start_id = provider.start(1, 2)
-            self.logger.info(
-                "STEP: Verify that the ID from the start request is returned."
-            )
+            self.logger.info("STEP: Verify that the ID from the start request is returned.")
             self.assertEqual(start_id, expected_start_id)
 
     def test_provider_start_http_exception(self):
@@ -107,9 +105,7 @@ class TestExternalExecutionSpace(unittest.TestCase):
         )
         expected_start_id = "123"
 
-        with FakeServer(
-            ["bad_request", "ok"], [{}, {"id": expected_start_id}]
-        ) as server:
+        with FakeServer(["bad_request", "ok"], [{}, {"id": expected_start_id}]) as server:
             ruleset = {
                 "id": "test_provider_start_http_exception",
                 "start": {"host": server.host},
@@ -118,9 +114,7 @@ class TestExternalExecutionSpace(unittest.TestCase):
             provider = ExternalProvider(etos, jsontas, ruleset)
             self.logger.info("STEP: Send a start request that fails.")
             start_id = provider.start(1, 2)
-            self.logger.info(
-                "STEP: Verify that the start method tries again on HTTP errors."
-            )
+            self.logger.info("STEP: Verify that the start method tries again on HTTP errors.")
             self.assertGreaterEqual(server.nbr_of_requests, 2)
             self.assertEqual(start_id, expected_start_id)
 
@@ -160,9 +154,7 @@ class TestExternalExecutionSpace(unittest.TestCase):
             self.logger.info("STEP: Send a start request which will never finish.")
 
             with self.assertRaises(TimeoutError):
-                self.logger.info(
-                    "STEP: Verify that the start method raises TimeoutError."
-                )
+                self.logger.info("STEP: Verify that the start method raises TimeoutError.")
                 provider.start(1, 2)
 
     def test_provider_stop(self):
@@ -234,9 +226,7 @@ class TestExternalExecutionSpace(unittest.TestCase):
                 "execution_spaces": execution_spaces,
             }
         )
-        dict_execution_spaces = [
-            execution_space.as_dict for execution_space in execution_spaces
-        ]
+        dict_execution_spaces = [execution_space.as_dict for execution_space in execution_spaces]
 
         with FakeServer("no_content", {}) as server:
             ruleset = {"id": "test_provider_stop_many", "stop": {"host": server.host}}
@@ -322,9 +312,7 @@ class TestExternalExecutionSpace(unittest.TestCase):
             provider = ExternalProvider(etos, jsontas, ruleset)
             self.logger.info("STEP: Send a stop request that fails.")
             with self.assertRaises(TimeoutError):
-                self.logger.info(
-                    "STEP: Verify that the checkin method raises a TimeoutError."
-                )
+                self.logger.info("STEP: Verify that the checkin method raises a TimeoutError.")
                 provider.checkin(execution_space)
 
     def test_provider_status(self):
@@ -357,13 +345,9 @@ class TestExternalExecutionSpace(unittest.TestCase):
             ruleset = {"id": "test_provider_status", "status": {"host": server.host}}
             self.logger.info("STEP: Initialize an external provider.")
             provider = ExternalProvider(etos, jsontas, ruleset)
-            self.logger.info(
-                "STEP: Send a status request for a started execution space provider."
-            )
+            self.logger.info("STEP: Send a status request for a started execution space provider.")
             response = provider.wait("1")
-            self.logger.info(
-                "STEP: Verify that the wait method return response on DONE."
-            )
+            self.logger.info("STEP: Verify that the wait method return response on DONE.")
             self.assertEqual(response.get("test_id"), test_id)
 
     def test_provider_status_pending(self):
@@ -399,9 +383,7 @@ class TestExternalExecutionSpace(unittest.TestCase):
             }
             self.logger.info("STEP: Initialize an external provider.")
             provider = ExternalProvider(etos, jsontas, ruleset)
-            self.logger.info(
-                "STEP: Send a status request for a started execution space provider."
-            )
+            self.logger.info("STEP: Send a status request for a started execution space provider.")
             provider.wait("1")
             self.logger.info("STEP: Verify that the wait method waits on PENDING.")
             self.assertEqual(server.nbr_of_requests, len(responses))
@@ -432,18 +414,14 @@ class TestExternalExecutionSpace(unittest.TestCase):
             }
         )
         description = "something failed!"
-        with FakeServer(
-            "ok", {"status": "FAILED", "description": description}
-        ) as server:
+        with FakeServer("ok", {"status": "FAILED", "description": description}) as server:
             ruleset = {
                 "id": "test_provider_status_failed",
                 "status": {"host": server.host},
             }
             self.logger.info("STEP: Initialize an external provider.")
             provider = ExternalProvider(etos, jsontas, ruleset)
-            self.logger.info(
-                "STEP: Send a status request for a started execution space provider."
-            )
+            self.logger.info("STEP: Send a status request for a started execution space provider.")
             with self.assertRaises(ExecutionSpaceCheckoutFailed):
                 self.logger.info(
                     "STEP: Verify that the wait method raises ExecutionSpaceCheckoutFailed."
@@ -532,9 +510,7 @@ class TestExternalExecutionSpace(unittest.TestCase):
             provider = ExternalProvider(etos, jsontas, ruleset)
             self.logger.info("STEP: Send a status request that times out.")
             with self.assertRaises(TimeoutError):
-                self.logger.info(
-                    "STEP: Verify that the wait method raises TimeoutError."
-                )
+                self.logger.info("STEP: Verify that the wait method raises TimeoutError.")
                 provider.wait("1")
 
     def test_request_and_wait(self):
