@@ -111,9 +111,7 @@ class JSONTasProvider:
                 for log_area in available_log_areas:
                     self.logger.info(log_area)
                 if len(available_log_areas) < minimum_amount:
-                    self.logger.critical(
-                        "Not enough available log areas in log area provider!"
-                    )
+                    self.logger.critical("Not enough available log areas in log area provider!")
                     raise NotEnoughLogAreasAvailable(self.id)
 
                 checked_out_log_areas = self.checkout(available_log_areas)
@@ -131,9 +129,7 @@ class JSONTasProvider:
                 self.logger.warning("Log area not available yet.")
                 continue
             except LogAreaCheckoutFailed as checkout_failed:
-                self.logger.critical(
-                    "Checkout of log area failed with reason %r!", checkout_failed
-                )
+                self.logger.critical("Checkout of log area failed with reason %r!", checkout_failed)
                 self.checkin_all()
                 checked_out_log_areas = []
                 break

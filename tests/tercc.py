@@ -38,9 +38,7 @@ TERCC_SUB_SUITES = {
                             {"key": "EXECUTE", "value": []},
                             {
                                 "key": "CHECKOUT",
-                                "value": [
-                                    "git clone https://github.com/eiffel-community/etos.git"
-                                ],
+                                "value": ["git clone https://github.com/eiffel-community/etos.git"],
                             },
                             {
                                 "key": "TEST_RUNNER",
@@ -62,9 +60,7 @@ TERCC_SUB_SUITES = {
                             {"key": "EXECUTE", "value": []},
                             {
                                 "key": "CHECKOUT",
-                                "value": [
-                                    "git clone https://github.com/eiffel-community/etos.git"
-                                ],
+                                "value": ["git clone https://github.com/eiffel-community/etos.git"],
                             },
                             {
                                 "key": "TEST_RUNNER",
@@ -108,9 +104,7 @@ TERCC = {
                             {"key": "EXECUTE", "value": []},
                             {
                                 "key": "CHECKOUT",
-                                "value": [
-                                    "git clone https://github.com/eiffel-community/etos.git"
-                                ],
+                                "value": ["git clone https://github.com/eiffel-community/etos.git"],
                             },
                             {
                                 "key": "TEST_RUNNER",
@@ -154,9 +148,7 @@ TERCC_PERMUTATION = {
                             {"key": "EXECUTE", "value": []},
                             {
                                 "key": "CHECKOUT",
-                                "value": [
-                                    "git clone https://github.com/eiffel-community/etos.git"
-                                ],
+                                "value": ["git clone https://github.com/eiffel-community/etos.git"],
                             },
                             {
                                 "key": "TEST_RUNNER",
@@ -184,9 +176,7 @@ TERCC_PERMUTATION = {
                             {"key": "EXECUTE", "value": []},
                             {
                                 "key": "CHECKOUT",
-                                "value": [
-                                    "git clone https://github.com/eiffel-community/etos.git"
-                                ],
+                                "value": ["git clone https://github.com/eiffel-community/etos.git"],
                             },
                             {
                                 "key": "TEST_RUNNER",

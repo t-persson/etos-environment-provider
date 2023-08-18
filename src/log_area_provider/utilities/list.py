@@ -63,20 +63,15 @@ class List:  # pylint:disable=too-few-public-methods
         log_areas = self.jsontas.run(self.list_ruleset)
         possible_log_areas = log_areas.get("possible")
 
-        self.logger.debug(
-            "Number of possible log areas available: %r", len(possible_log_areas)
-        )
+        self.logger.debug("Number of possible log areas available: %r", len(possible_log_areas))
         if not possible_log_areas:
             raise NoLogAreaFound()
 
         available_log_areas = log_areas.get("available")
 
-        self.logger.debug(
-            "Number of actual log areas available: %r", len(available_log_areas)
-        )
+        self.logger.debug("Number of actual log areas available: %r", len(available_log_areas))
         if not available_log_areas:
             raise LogAreaNotAvailable()
         return [
-            LogArea(provider_id=self.id, **log_area)
-            for log_area in available_log_areas[:amount]
+            LogArea(provider_id=self.id, **log_area) for log_area in available_log_areas[:amount]
         ]

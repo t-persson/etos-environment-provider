@@ -66,9 +66,7 @@ class TestEnvironmentBackend(unittest.TestCase):
             test_value = f"testing_{parameter}"
             request = FakeRequest()
             request.fake_params[parameter] = test_value
-            self.logger.info(
-                "STEP: Call the function to get the parameter %r", parameter
-            )
+            self.logger.info("STEP: Call the function to get the parameter %r", parameter)
             response_value = func(request)
             self.logger.info("STEP: Verify that the parameter is correct.")
             self.assertEqual(response_value, test_value)
@@ -167,9 +165,7 @@ class TestEnvironmentBackend(unittest.TestCase):
             test_release_id,
         )
 
-        self.logger.info(
-            "STEP: Verify that it was possible to release that environment."
-        )
+        self.logger.info("STEP: Verify that it was possible to release that environment.")
         self.assertTrue(success)
         self.assertIsNone(worker.AsyncResult(test_release_id))
 
@@ -256,9 +252,7 @@ class TestEnvironmentBackend(unittest.TestCase):
             },
         )
 
-        self.logger.info(
-            "STEP: Release an environment where one provider will fail to check in."
-        )
+        self.logger.info("STEP: Release an environment where one provider will fail to check in.")
         success, _ = release_full_environment(
             etos,
             jsontas,
@@ -339,8 +333,6 @@ class TestEnvironmentBackend(unittest.TestCase):
         self.logger.info("STEP: Request an environment from the environment provider.")
         response = request_environment(suite_id, suite_runner_id)
 
-        self.logger.info(
-            "STEP: Verify that the environment provider starts the celery task."
-        )
+        self.logger.info("STEP: Verify that the environment provider starts the celery task.")
         self.assertEqual(response, task_id)
         get_environment_mock.delay.assert_called_once_with(suite_id, suite_runner_id)

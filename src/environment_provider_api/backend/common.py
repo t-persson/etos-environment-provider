@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Common functionality for all backend types."""
+from falcon.errors import MediaNotFoundError
 
 
 def get_suite_id(request):
@@ -24,9 +25,11 @@ def get_suite_id(request):
     :return: A Suite ID.
     :rtype: str
     """
-    if request.media is None:
+    try:
+        media = request.get_media()
+        return media.get("suite_id")
+    except MediaNotFoundError:
         return request.get_param("suite_id")
-    return request.media.get("suite_id")
 
 
 def get_suite_runner_ids(request):
@@ -37,10 +40,11 @@ def get_suite_runner_ids(request):
     :return: Suite runner IDs.
     :rtype: list
     """
-    if request.media is None:
+    try:
+        media = request.get_media()
+        param = media.get("suite_runner_ids")
+    except MediaNotFoundError:
         param = request.get_param("suite_runner_ids")
-    else:
-        param = request.media.get("suite_runner_ids")
     if param is None:
         return param
     return param.split(",")

@@ -47,7 +47,5 @@ def get_id(request):
     """
     _id = request.get_param("id")
     if _id is None:
-        raise falcon.HTTPBadRequest(
-            "Missing parameter", "'id' is a required parameter."
-        )
+        raise falcon.HTTPBadRequest("Missing parameter", "'id' is a required parameter.")
     return _id

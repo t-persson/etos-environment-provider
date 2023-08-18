@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """A fake request and response structure that can be used in tests."""
+from falcon.errors import MediaNotFoundError
 
 
 class FakeRequest:  # pylint:disable=too-few-public-methods
@@ -37,11 +38,10 @@ class FakeRequest:  # pylint:disable=too-few-public-methods
         """
         return self.fake_params.get(name)
 
-    @property
-    def media(self):
+    def get_media(self):
         """Media is used for POST requests."""
         if self.force_media_none:
-            return None
+            raise MediaNotFoundError("")
         return self.fake_params
 
 

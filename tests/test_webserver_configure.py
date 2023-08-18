@@ -89,13 +89,9 @@ class TestConfigure(unittest.TestCase):
         self.logger.info("STEP: Send a GET request to the configure endpoint.")
         Configure(database).on_get(request, response)
 
-        self.logger.info(
-            "STEP: Verify that the configuration is the same as in the database."
-        )
+        self.logger.info("STEP: Verify that the configuration is the same as in the database.")
         self.assertEqual(response.status, falcon.HTTP_200)
-        self.assertDictEqual(
-            response.media.get("iut_provider", {}), test_iut_provider["iut"]
-        )
+        self.assertDictEqual(response.media.get("iut_provider", {}), test_iut_provider["iut"])
         self.assertDictEqual(
             response.media.get("log_area_provider", {}), test_log_area_provider["log"]
         )
@@ -118,9 +114,7 @@ class TestConfigure(unittest.TestCase):
         database = FakeDatabase()
         response = FakeResponse()
         request = FakeRequest()
-        self.logger.info(
-            "STEP: Send a GET request to the configure endpoint without suite id."
-        )
+        self.logger.info("STEP: Send a GET request to the configure endpoint without suite id.")
         with self.assertRaises(falcon.HTTPBadRequest):
             self.logger.info("STEP: Verify that a BadRequest is returned.")
             Configure(database).on_get(request, response)
@@ -179,9 +173,7 @@ class TestConfigure(unittest.TestCase):
         request = FakeRequest()
         request.fake_params = {
             "iut_provider": test_iut_provider["iut"]["id"],
-            "execution_space_provider": test_execution_space_provider[
-                "execution_space"
-            ]["id"],
+            "execution_space_provider": test_execution_space_provider["execution_space"]["id"],
             "log_area_provider": test_log_area_provider["log"]["id"],
             "dataset": {},
             "suite_id": test_suite_id,
@@ -189,26 +181,18 @@ class TestConfigure(unittest.TestCase):
         self.logger.info("STEP: Send a configure request to use those providers.")
         Configure(database).on_post(request, response)
 
-        self.logger.info(
-            "STEP: Verify that the configuration matches the providers in database."
-        )
+        self.logger.info("STEP: Verify that the configuration matches the providers in database.")
         self.assertEqual(response.status, falcon.HTTP_200)
         stored_iut_provider = json.loads(
             database.reader.hget(f"EnvironmentProvider:{test_suite_id}", "IUTProvider")
         )
         self.assertDictEqual(stored_iut_provider, test_iut_provider)
         stored_execution_space_provider = json.loads(
-            database.reader.hget(
-                f"EnvironmentProvider:{test_suite_id}", "ExecutionSpaceProvider"
-            )
+            database.reader.hget(f"EnvironmentProvider:{test_suite_id}", "ExecutionSpaceProvider")
         )
-        self.assertDictEqual(
-            stored_execution_space_provider, test_execution_space_provider
-        )
+        self.assertDictEqual(stored_execution_space_provider, test_execution_space_provider)
         stored_log_area_provider = json.loads(
-            database.reader.hget(
-                f"EnvironmentProvider:{test_suite_id}", "LogAreaProvider"
-            )
+            database.reader.hget(f"EnvironmentProvider:{test_suite_id}", "LogAreaProvider")
         )
         self.assertDictEqual(stored_log_area_provider, test_log_area_provider)
         stored_dataset = json.loads(
@@ -269,9 +253,7 @@ class TestConfigure(unittest.TestCase):
         request = FakeRequest()
         test_params = {
             "iut_provider": test_iut_provider["iut"]["id"],
-            "execution_space_provider": test_execution_space_provider[
-                "execution_space"
-            ]["id"],
+            "execution_space_provider": test_execution_space_provider["execution_space"]["id"],
             "log_area_provider": test_log_area_provider["log"]["id"],
             "dataset": {},
         }
@@ -298,9 +280,7 @@ class TestConfigure(unittest.TestCase):
 
             self.logger.info("STEP: Verify that it was not possible to configure.")
             self.assertIsNone(
-                database.reader.hget(
-                    f"EnvironmentProvider:{test_suite_id}", "IUTProvider"
-                )
+                database.reader.hget(f"EnvironmentProvider:{test_suite_id}", "IUTProvider")
             )
             self.assertIsNone(
                 database.reader.hget(
@@ -308,9 +288,7 @@ class TestConfigure(unittest.TestCase):
                 )
             )
             self.assertIsNone(
-                database.reader.hget(
-                    f"EnvironmentProvider:{test_suite_id}", "LogAreaProvider"
-                )
+                database.reader.hget(f"EnvironmentProvider:{test_suite_id}", "LogAreaProvider")
             )
             self.assertIsNone(
                 database.reader.hget(f"EnvironmentProvider:{test_suite_id}", "Dataset")

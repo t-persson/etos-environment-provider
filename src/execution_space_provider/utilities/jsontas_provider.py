@@ -69,9 +69,7 @@ class JSONTasProvider:
         :return: Available execution spaces in the execution space provider.
         :rtype: list
         """
-        list_execution_spaces = List(
-            self.id, self.etos, self.jsontas, self.ruleset.get("list")
-        )
+        list_execution_spaces = List(self.id, self.etos, self.jsontas, self.ruleset.get("list"))
         return list_execution_spaces.list(amount)
 
     def checkin_all(self):
@@ -89,9 +87,7 @@ class JSONTasProvider:
         checkin_execution_spaces = Checkin(self.jsontas, self.ruleset.get("checkin"))
         checkin_execution_spaces.checkin(execution_space)
 
-    def _wait_for_and_checkout_execution_spaces(
-        self, minimum_amount=0, maximum_amount=100
-    ):
+    def _wait_for_and_checkout_execution_spaces(self, minimum_amount=0, maximum_amount=100):
         """Wait for and checkout execution spaces from an execution space provider.
 
         :raises: ExecutionSpaceNotAvailable: If there are no available execution spaces after
@@ -118,8 +114,7 @@ class JSONTasProvider:
                     self.logger.info(execution_space)
                 if len(available_execution_spaces) < minimum_amount:
                     self.logger.critical(
-                        "Not enough available execution spaces in "
-                        "execution space provider!"
+                        "Not enough available execution spaces in " "execution space provider!"
                     )
                     raise NotEnoughExecutionSpacesAvailable(self.id)
 
@@ -131,9 +126,7 @@ class JSONTasProvider:
                     raise ExecutionSpaceNotAvailable(self.id)
                 break
             except NoExecutionSpaceFound:
-                self.logger.critical(
-                    "Execution space does not exist in execution space provider!"
-                )
+                self.logger.critical("Execution space does not exist in execution space provider!")
                 checked_out_execution_spaces = []
                 break
             except ExecutionSpaceNotAvailable:
@@ -157,9 +150,7 @@ class JSONTasProvider:
             raise ExecutionSpaceNotAvailable(self.id)
         return checked_out_execution_spaces
 
-    def wait_for_and_checkout_execution_spaces(
-        self, minimum_amount=0, maximum_amount=100
-    ):
+    def wait_for_and_checkout_execution_spaces(self, minimum_amount=0, maximum_amount=100):
         """Wait for and checkout execution spaces from an execution space provider.
 
         See: `_wait_for_and_checkout_execution_spaces`
@@ -190,9 +181,7 @@ class JSONTasProvider:
                 ],
             )
             self.etos.events.send_activity_started(triggered)
-            return self._wait_for_and_checkout_execution_spaces(
-                minimum_amount, maximum_amount
-            )
+            return self._wait_for_and_checkout_execution_spaces(minimum_amount, maximum_amount)
         except Exception as exception:
             error = exception
             raise

@@ -30,9 +30,7 @@ if PASSWORD:
 else:
     CELERY_BROKER_URL = f"sentinel://{HOST}:{PORT}"
 
-APP = Celery(
-    "environment_provider", broker=CELERY_BROKER_URL, backend=CELERY_BROKER_URL
-)
+APP = Celery("environment_provider", broker=CELERY_BROKER_URL, backend=CELERY_BROKER_URL)
 if PASSWORD:
     APP.conf.broker_transport_options = {
         "master_name": "mymaster",
@@ -45,4 +43,6 @@ if PASSWORD:
 else:
     APP.conf.broker_transport_options = {"master_name": "mymaster"}
     APP.conf.result_backend_transport_options = {"master_name": "mymaster"}
+APP.conf.broker_connection_retry = True
+APP.conf.broker_connection_retry_on_startup = True
 APP.conf.worker_hijack_root_logger = False

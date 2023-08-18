@@ -1,3 +1,6 @@
+[main]
+extension-pkg-allow-list=falcon
+
 [messages control]
 disable=
     fixme

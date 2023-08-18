@@ -162,12 +162,8 @@ class ExternalProvider:
             for response in response_iterator:
                 return response.get("id")
         except ConnectionError as http_error:
-            self.logger.error(
-                "Could not start external provider due to a connection error"
-            )
-            raise TimeoutError(
-                f"Unable to start external provider {self.id!r}"
-            ) from http_error
+            self.logger.error("Could not start external provider due to a connection error")
+            raise TimeoutError(f"Unable to start external provider {self.id!r}") from http_error
         raise TimeoutError(f"Unable to start external provider {self.id!r}")
 
     def wait(self, provider_id):
@@ -230,13 +226,9 @@ class ExternalProvider:
             self.logger.error("Could not parse response as JSON")
 
         if response.status_code == requests.codes["not_found"]:
-            raise LogAreaNotAvailable(
-                f"External provider {self.id!r} did not respond properly"
-            )
+            raise LogAreaNotAvailable(f"External provider {self.id!r} did not respond properly")
         if response.status_code == requests.codes["bad_request"]:
-            raise RuntimeError(
-                f"Log area provider for {self.id!r} is not properly configured"
-            )
+            raise RuntimeError(f"Log area provider for {self.id!r} is not properly configured")
 
         # This should work, no other errors found.
         # If this does not work, propagate JSONDecodeError up the stack.
@@ -251,8 +243,7 @@ class ExternalProvider:
         :rtype: list
         """
         return [
-            LogArea(provider_id=self.id, **log_area)
-            for log_area in response.get("log_areas", [])
+            LogArea(provider_id=self.id, **log_area) for log_area in response.get("log_areas", [])
         ]
 
     def request_and_wait_for_log_areas(self, minimum_amount=0, maximum_amount=100):

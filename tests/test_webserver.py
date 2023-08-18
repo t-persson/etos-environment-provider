@@ -53,9 +53,7 @@ class TestSubSuite(unittest.TestCase):
         response = FakeResponse()
         SubSuite(database).on_get(request, response)
 
-        self.logger.info(
-            "STEP: Verify that the sub suite endpoint responds with a sub suite."
-        )
+        self.logger.info("STEP: Verify that the sub suite endpoint responds with a sub suite.")
         self.assertDictEqual(response.fake_responses.get("media"), sub_suite)
 
     def test_get_no_id(self):
@@ -72,8 +70,6 @@ class TestSubSuite(unittest.TestCase):
         request = FakeRequest()
         request.fake_params["id"] = "thisonedoesnotexist"
         response = FakeResponse()
-        self.logger.info(
-            "STEP: Verify that the sub suite endpoint responds with HTTPNotFound."
-        )
+        self.logger.info("STEP: Verify that the sub suite endpoint responds with HTTPNotFound.")
         with self.assertRaises(falcon.HTTPNotFound):
             SubSuite(FakeDatabase).on_get(request, response)

@@ -122,9 +122,7 @@ class Webserver:
             response.media = {
                 "error": "Failed to release environment",
                 "details": "".join(
-                    traceback.format_exception(
-                        failure, value=failure, tb=failure.__traceback__
-                    )
+                    traceback.format_exception(failure, value=failure, tb=failure.__traceback__)
                 ),
                 "status": "FAILURE",
             }
@@ -152,9 +150,7 @@ class Webserver:
         jsontas = JsonTas()
         registry = ProviderRegistry(etos, jsontas, self.database())
         task_result = self.celery_worker.AsyncResult(task_id)
-        success, message = release_full_environment(
-            etos, jsontas, registry, task_result, task_id
-        )
+        success, message = release_full_environment(etos, jsontas, registry, task_result, task_id)
         if not success:
             response.media = {
                 "error": "Failed to release environment",
@@ -242,9 +238,7 @@ class Configure:
         :param response: Falcon response object.
         :type response: :obj:`falcon.response`
         """
-        etos = ETOS(
-            "ETOS Environment Provider", os.getenv("HOSTNAME"), "Environment Provider"
-        )
+        etos = ETOS("ETOS Environment Provider", os.getenv("HOSTNAME"), "Environment Provider")
         jsontas = JsonTas()
         registry = ProviderRegistry(etos, jsontas, self.database())
         suite_id = get_suite_id(request)
@@ -273,17 +267,13 @@ class Configure:
         :param response: Falcon response object.
         :type response: :obj:`falcon.response`
         """
-        etos = ETOS(
-            "ETOS Environment Provider", os.getenv("HOSTNAME"), "Environment Provider"
-        )
+        etos = ETOS("ETOS Environment Provider", os.getenv("HOSTNAME"), "Environment Provider")
         jsontas = JsonTas()
         registry = ProviderRegistry(etos, jsontas, self.database())
 
         suite_id = get_suite_id(request)
         if suite_id is None:
-            raise falcon.HTTPBadRequest(
-                "Missing parameters", "'suite_id' is a required parameter."
-            )
+            raise falcon.HTTPBadRequest("Missing parameters", "'suite_id' is a required parameter.")
         FORMAT_CONFIG.identifier = suite_id
         response.status = falcon.HTTP_200
         response.media = get_configuration(registry, suite_id)
@@ -308,9 +298,7 @@ class Register:  # pylint:disable=too-few-public-methods
         :param response: Falcon response object.
         :type response: :obj:`falcon.response`
         """
-        etos = ETOS(
-            "ETOS Environment Provider", os.getenv("HOSTNAME"), "Environment Provider"
-        )
+        etos = ETOS("ETOS Environment Provider", os.getenv("HOSTNAME"), "Environment Provider")
         jsontas = JsonTas()
         registry = ProviderRegistry(etos, jsontas, self.database())
         registered = register(
@@ -357,7 +345,7 @@ class SubSuite:  # pylint:disable=too-few-public-methods
         response.media = suite
 
 
-FALCON_APP = falcon.API(middleware=[RequireJSON(), JSONTranslator()])
+FALCON_APP = falcon.App(middleware=[RequireJSON(), JSONTranslator()])
 WEBSERVER = Webserver(Database, APP)
 CONFIGURE = Configure(Database)
 REGISTER = Register(Database)

@@ -108,16 +108,12 @@ class ExternalProvider:
             else:
                 time.sleep(2)
             try:
-                response = requests.post(
-                    host, json=iuts, headers={"X-ETOS-ID": self.identifier}
-                )
+                response = requests.post(host, json=iuts, headers={"X-ETOS-ID": self.identifier})
                 if response.status_code == requests.codes["no_content"]:
                     return
                 response = response.json()
                 if response.get("error") is not None:
-                    raise IutCheckinFailed(
-                        f"Unable to check in {iuts} ({response.get('error')})"
-                    )
+                    raise IutCheckinFailed(f"Unable to check in {iuts} ({response.get('error')})")
             except ConnectionError:
                 self.logger.error("Error connecting to %r", host)
                 continue
@@ -163,12 +159,8 @@ class ExternalProvider:
             for response in response_iterator:
                 return response.get("id")
         except ConnectionError as http_error:
-            self.logger.error(
-                "Could not start external provider due to a connection error"
-            )
-            raise TimeoutError(
-                f"Unable to start external provider {self.id!r}"
-            ) from http_error
+            self.logger.error("Could not start external provider due to a connection error")
+            raise TimeoutError(f"Unable to start external provider {self.id!r}") from http_error
         raise TimeoutError(f"Unable to start external provider {self.id!r}")
 
     def wait(self, provider_id):
@@ -226,13 +218,9 @@ class ExternalProvider:
             self.logger.error("Could not parse response as JSON")
 
         if response.status_code == requests.codes["not_found"]:
-            raise IutNotAvailable(
-                f"External provider {self.id!r} did not respond properly"
-            )
+            raise IutNotAvailable(f"External provider {self.id!r} did not respond properly")
         if response.status_code == requests.codes["bad_request"]:
-            raise RuntimeError(
-                f"IUT provider for {self.id!r} is not properly configured"
-            )
+            raise RuntimeError(f"IUT provider for {self.id!r} is not properly configured")
 
         # This should work, no other errors found.
         # If this does not work, propagate JSONDecodeError up the stack.

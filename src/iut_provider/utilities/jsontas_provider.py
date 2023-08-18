@@ -174,9 +174,7 @@ class JSONTasProvider:
                 for iut in prepared_iuts:
                     self.logger.info(iut)
                 if len(prepared_iuts) < minimum_amount:
-                    raise IutNotAvailable(
-                        f"Preparation of {self.identity.to_string()} failed"
-                    )
+                    raise IutNotAvailable(f"Preparation of {self.identity.to_string()} failed")
                 break
             except NoIutFound as not_found:
                 self.logger.critical(

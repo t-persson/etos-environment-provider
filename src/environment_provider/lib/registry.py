@@ -101,9 +101,7 @@ class ProviderRegistry:
         :rtype: dict or None
         """
         self.logger.info("Getting log area provider %r", provider_id)
-        provider = self.database.reader.hget(
-            "EnvironmentProvider:LogAreaProviders", provider_id
-        )
+        provider = self.database.reader.hget("EnvironmentProvider:LogAreaProviders", provider_id)
         self.logger.debug(provider)
         if provider:
             return json.loads(provider, object_pairs_hook=OrderedDict)
@@ -120,9 +118,7 @@ class ProviderRegistry:
         :rtype: dict or None
         """
         self.logger.info("Getting iut provider %r", provider_id)
-        provider = self.database.reader.hget(
-            "EnvironmentProvider:IUTProviders", provider_id
-        )
+        provider = self.database.reader.hget("EnvironmentProvider:IUTProviders", provider_id)
         self.logger.debug(provider)
         if provider:
             return json.loads(provider, object_pairs_hook=OrderedDict)
@@ -155,9 +151,7 @@ class ProviderRegistry:
         """
         data = self.validate(ruleset, log_area_provider_schema(ruleset))
         self.logger.info("Registering %r", data)
-        self.database.writer.hdel(
-            "EnvironmentProvider:LogAreaProviders", data["log"]["id"]
-        )
+        self.database.writer.hdel("EnvironmentProvider:LogAreaProviders", data["log"]["id"])
         self.database.writer.hset(
             "EnvironmentProvider:LogAreaProviders", data["log"]["id"], json.dumps(data)
         )
@@ -208,9 +202,7 @@ class ProviderRegistry:
             provider = ExecutionSpaceProvider(
                 self.etos,
                 self.jsontas,
-                json.loads(provider_json, object_pairs_hook=OrderedDict).get(
-                    "execution_space"
-                ),
+                json.loads(provider_json, object_pairs_hook=OrderedDict).get("execution_space"),
             )
             self.etos.config.get("PROVIDERS").append(provider)
             return provider
@@ -224,9 +216,7 @@ class ProviderRegistry:
         :return: IUT provider object.
         :rtype: :obj:`environment_provider.iut.iut_provider.IutProvider`
         """
-        provider_str = self.database.reader.hget(
-            f"EnvironmentProvider:{suite_id}", "IUTProvider"
-        )
+        provider_str = self.database.reader.hget(f"EnvironmentProvider:{suite_id}", "IUTProvider")
         self.logger.info(provider_str)
         if provider_str:
             provider_json = json.loads(provider_str, object_pairs_hook=OrderedDict)
@@ -265,9 +255,7 @@ class ProviderRegistry:
         :return: Dataset JSON data.
         :rtype: dict
         """
-        dataset = self.database.reader.hget(
-            f"EnvironmentProvider:{suite_id}", "Dataset"
-        )
+        dataset = self.database.reader.hget(f"EnvironmentProvider:{suite_id}", "Dataset")
         if dataset:
             return json.loads(dataset)
         return None
@@ -302,13 +290,9 @@ class ProviderRegistry:
             "Execution space provider: %r",
             execution_space_provider.get("execution_space", {}).get("id"),
         )
-        self.logger.info(
-            "Log area provider: %r", log_area_provider.get("log", {}).get("id")
-        )
+        self.logger.info("Log area provider: %r", log_area_provider.get("log", {}).get("id"))
         self.logger.info("Expire: 3600")
-        self.database.writer.hset(
-            f"EnvironmentProvider:{suite_id}", "Dataset", json.dumps(dataset)
-        )
+        self.database.writer.hset(f"EnvironmentProvider:{suite_id}", "Dataset", json.dumps(dataset))
         self.database.writer.hset(
             f"EnvironmentProvider:{suite_id}",
             "IUTProvider",

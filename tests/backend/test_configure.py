@@ -56,14 +56,10 @@ class TestConfigureBackend(unittest.TestCase):
         request = FakeRequest()
         test_provider_id = "test_iut_provider"
         request.fake_params["iut_provider"] = test_provider_id
-        self.logger.info(
-            "STEP: Get IUT provider id from request via the configure backend."
-        )
+        self.logger.info("STEP: Get IUT provider id from request via the configure backend.")
         response_provider_id = get_iut_provider_id(request)
 
-        self.logger.info(
-            "STEP: Verify that the backend returns the correct iut provider id."
-        )
+        self.logger.info("STEP: Verify that the backend returns the correct iut provider id.")
         self.assertEqual(test_provider_id, response_provider_id)
 
     def test_iut_provider_id_none(self):
@@ -76,9 +72,7 @@ class TestConfigureBackend(unittest.TestCase):
             1. Get IUT provider from request via the configure backend.
             2. Verify that the backend returns None.
         """
-        self.logger.info(
-            "STEP: Get IUT provider id from request via the configure backend."
-        )
+        self.logger.info("STEP: Get IUT provider id from request via the configure backend.")
         response = get_iut_provider_id(FakeRequest())
 
         self.logger.info("STEP: Verify that the backend returns None.")
@@ -139,14 +133,10 @@ class TestConfigureBackend(unittest.TestCase):
         request = FakeRequest()
         test_provider_id = "test_log_area_provider_id"
         request.fake_params["log_area_provider"] = test_provider_id
-        self.logger.info(
-            "STEP: Get log area provider id from request via the configure backend."
-        )
+        self.logger.info("STEP: Get log area provider id from request via the configure backend.")
         response_provider_id = get_log_area_provider_id(request)
 
-        self.logger.info(
-            "STEP: Verify that the backend returns the correct log area provider id."
-        )
+        self.logger.info("STEP: Verify that the backend returns the correct log area provider id.")
         self.assertEqual(test_provider_id, response_provider_id)
 
     def test_log_area_provider_id_none(self):
@@ -159,9 +149,7 @@ class TestConfigureBackend(unittest.TestCase):
             1. Get log area provider from request via the configure backend.
             2. Verify that the backend returns None.
         """
-        self.logger.info(
-            "STEP: Get log area provider id from request via the configure backend."
-        )
+        self.logger.info("STEP: Get log area provider id from request via the configure backend.")
         response = get_log_area_provider_id(FakeRequest())
 
         self.logger.info("STEP: Verify that the backend returns None.")
@@ -264,26 +252,18 @@ class TestConfigureBackend(unittest.TestCase):
             test_suite_id,
         )
 
-        self.logger.info(
-            "STEP: Verify that the configuration was stored in the database."
-        )
+        self.logger.info("STEP: Verify that the configuration was stored in the database.")
         self.assertTrue(success)
         stored_iut_provider = json.loads(
             database.reader.hget(f"EnvironmentProvider:{test_suite_id}", "IUTProvider")
         )
         self.assertDictEqual(stored_iut_provider, test_iut_provider)
         stored_execution_space_provider = json.loads(
-            database.reader.hget(
-                f"EnvironmentProvider:{test_suite_id}", "ExecutionSpaceProvider"
-            )
+            database.reader.hget(f"EnvironmentProvider:{test_suite_id}", "ExecutionSpaceProvider")
         )
-        self.assertDictEqual(
-            stored_execution_space_provider, test_execution_space_provider
-        )
+        self.assertDictEqual(stored_execution_space_provider, test_execution_space_provider)
         stored_log_area_provider = json.loads(
-            database.reader.hget(
-                f"EnvironmentProvider:{test_suite_id}", "LogAreaProvider"
-            )
+            database.reader.hget(f"EnvironmentProvider:{test_suite_id}", "LogAreaProvider")
         )
         self.assertDictEqual(stored_log_area_provider, test_log_area_provider)
         stored_dataset = json.loads(
@@ -309,9 +289,7 @@ class TestConfigureBackend(unittest.TestCase):
         registry = ProviderRegistry(ETOS("", "", ""), JsonTas(), database)
         success, _ = configure(registry, None, None, None, None, None)
 
-        self.logger.info(
-            "STEP: Verify that False was returned and no configuration was made."
-        )
+        self.logger.info("STEP: Verify that False was returned and no configuration was made.")
         self.assertFalse(success)
         self.assertDictEqual(database.db_dict, {})
 
@@ -377,26 +355,18 @@ class TestConfigureBackend(unittest.TestCase):
             test_suite_id,
         )
 
-        self.logger.info(
-            "STEP: Verify that the configuration was stored in the database."
-        )
+        self.logger.info("STEP: Verify that the configuration was stored in the database.")
         self.assertTrue(success)
         stored_iut_provider = json.loads(
             database.reader.hget(f"EnvironmentProvider:{test_suite_id}", "IUTProvider")
         )
         self.assertDictEqual(stored_iut_provider, test_iut_provider)
         stored_execution_space_provider = json.loads(
-            database.reader.hget(
-                f"EnvironmentProvider:{test_suite_id}", "ExecutionSpaceProvider"
-            )
+            database.reader.hget(f"EnvironmentProvider:{test_suite_id}", "ExecutionSpaceProvider")
         )
-        self.assertDictEqual(
-            stored_execution_space_provider, test_execution_space_provider
-        )
+        self.assertDictEqual(stored_execution_space_provider, test_execution_space_provider)
         stored_log_area_provider = json.loads(
-            database.reader.hget(
-                f"EnvironmentProvider:{test_suite_id}", "LogAreaProvider"
-            )
+            database.reader.hget(f"EnvironmentProvider:{test_suite_id}", "LogAreaProvider")
         )
         self.assertDictEqual(stored_log_area_provider, test_log_area_provider)
         stored_dataset = json.loads(
@@ -461,18 +431,14 @@ class TestConfigureBackend(unittest.TestCase):
             json.dumps(test_log_area_provider),
         )
 
-        self.logger.info(
-            "STEP: Verify that it is possible to get the stored configuration."
-        )
+        self.logger.info("STEP: Verify that it is possible to get the stored configuration.")
         registry = ProviderRegistry(ETOS("", "", ""), JsonTas(), database)
         stored_configuration = get_configuration(registry, test_suite_id)
         self.assertDictEqual(
             stored_configuration,
             {
                 "iut_provider": test_iut_provider["iut"],
-                "execution_space_provider": test_execution_space_provider[
-                    "execution_space"
-                ],
+                "execution_space_provider": test_execution_space_provider["execution_space"],
                 "log_area_provider": test_log_area_provider["log"],
                 "dataset": test_dataset,
             },
@@ -497,9 +463,7 @@ class TestConfigureBackend(unittest.TestCase):
             f"EnvironmentProvider:{test_suite_id}", "Dataset", json.dumps(test_dataset)
         )
 
-        self.logger.info(
-            "STEP: Verify that it is possible to get the partial configuration."
-        )
+        self.logger.info("STEP: Verify that it is possible to get the partial configuration.")
         registry = ProviderRegistry(ETOS("", "", ""), JsonTas(), database)
         stored_configuration = get_configuration(registry, test_suite_id)
         self.assertDictEqual(

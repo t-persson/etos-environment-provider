@@ -20,6 +20,7 @@ import logging
 import traceback
 import json
 import time
+from datetime import datetime
 from threading import Lock
 from copy import deepcopy
 from etos_lib.etos import ETOS
@@ -68,14 +69,15 @@ class EnvironmentProvider:  # pylint:disable=too-many-instance-attributes
         :param test_db: Override the database with a test database.
         :type test_db: obj
         """
+        FORMAT_CONFIG.identifier = suite_id
+        self.logger.info("Initializing EnvironmentProvider task.")
+
+        self.etos = ETOS("ETOS Environment Provider", os.getenv("HOSTNAME"), "Environment Provider")
+
         self.suite_id = suite_id
         self.test_db = test_db
-        FORMAT_CONFIG.identifier = suite_id
         self.suite_runner_ids = suite_runner_ids
-        self.logger.info("Initializing EnvironmentProvider task.")
-        self.etos = ETOS(
-            "ETOS Environment Provider", os.getenv("HOSTNAME"), "Environment Provider"
-        )
+
         with self.lock:
             # Since celery workers can share memory between them we need to make the configuration
             # of ETOS library unique as it uses the memory sharing feature with the internal
@@ -106,16 +108,14 @@ class EnvironmentProvider:  # pylint:disable=too-many-instance-attributes
         self.dataset.add("environment", os.environ)
         self.dataset.add("config", self.etos.config)
         self.dataset.add("identity", self.environment_provider_config.identity)
+        self.dataset.add("custom_data", self.environment_provider_config.custom_data)
+
         self.dataset.add("artifact_id", self.environment_provider_config.artifact_id)
         self.dataset.add("context", self.environment_provider_config.context)
-        self.dataset.add("custom_data", self.environment_provider_config.custom_data)
         self.dataset.add("uuid", str(uuid.uuid4()))
-        self.dataset.add(
-            "artifact_created", self.environment_provider_config.artifact_created
-        )
-        self.dataset.add(
-            "artifact_published", self.environment_provider_config.artifact_published
-        )
+
+        self.dataset.add("artifact_created", self.environment_provider_config.artifact_created)
+        self.dataset.add("artifact_published", self.environment_provider_config.artifact_published)
         self.dataset.add("tercc", self.environment_provider_config.tercc)
 
         self.dataset.add("dataset", dataset)
@@ -123,9 +123,7 @@ class EnvironmentProvider:  # pylint:disable=too-many-instance-attributes
 
         self.iut_provider = self.registry.iut_provider(self.suite_id)
         self.log_area_provider = self.registry.log_area_provider(self.suite_id)
-        self.execution_space_provider = self.registry.execution_space_provider(
-            self.suite_id
-        )
+        self.execution_space_provider = self.registry.execution_space_provider(self.suite_id)
 
     def configure(self, suite_id):
         """Configure environment provider.
@@ -144,9 +142,7 @@ class EnvironmentProvider:  # pylint:disable=too-many-instance-attributes
         self.logger.info("Registry is configured.")
         self.etos.config.set("SUITE_ID", suite_id)
 
-        self.etos.config.set(
-            "EVENT_DATA_TIMEOUT", int(os.getenv("ETOS_EVENT_DATA_TIMEOUT", "10"))
-        )
+        self.etos.config.set("EVENT_DATA_TIMEOUT", int(os.getenv("ETOS_EVENT_DATA_TIMEOUT", "10")))
         self.etos.config.set(
             "WAIT_FOR_IUT_TIMEOUT", int(os.getenv("ETOS_WAIT_FOR_IUT_TIMEOUT", "10"))
         )
@@ -307,13 +303,10 @@ class EnvironmentProvider:  # pylint:disable=too-many-instance-attributes
             uri=f"{base_url}/sub_suite?id={identifier}",
             links={"CONTEXT": self.etos.config.get("environment_provider_context")},
         )
+
         self.database.write(event.meta.event_id, identifier)
-        self.database.writer.hset(
-            f"SubSuite:{identifier}", "EventID", event.meta.event_id
-        )
-        self.database.writer.hset(
-            f"SubSuite:{identifier}", "Suite", json.dumps(sub_suite)
-        )
+        self.database.writer.hset(f"SubSuite:{identifier}", "EventID", event.meta.event_id)
+        self.database.writer.hset(f"SubSuite:{identifier}", "Suite", json.dumps(sub_suite))
 
     def checkout_an_execution_space(self):
         """Check out a single execution space.
@@ -321,9 +314,7 @@ class EnvironmentProvider:  # pylint:disable=too-many-instance-attributes
         :return: An execution space
         :rtype: obj:`execution_space_provider.execution_space`
         """
-        return self.execution_space_provider.wait_for_and_checkout_execution_spaces(
-            1, 1
-        )[0]
+        return self.execution_space_provider.wait_for_and_checkout_execution_spaces(1, 1)[0]
 
     def checkout_a_log_area(self):
         """Check out a single log area.
@@ -332,6 +323,29 @@ class EnvironmentProvider:  # pylint:disable=too-many-instance-attributes
         :rtype: obj:`log_area_provider.log_area`
         """
         return self.log_area_provider.wait_for_and_checkout_log_areas(1, 1)[0]
+
+    def checkout_timeout(self):
+        """Get timeout for checkout."""
+        timeout = (
+            self.etos.config.get("WAIT_FOR_IUT_TIMEOUT")
+            + self.etos.config.get("WAIT_FOR_EXECUTION_SPACE_TIMEOUT")
+            + self.etos.config.get("WAIT_FOR_LOG_AREA_TIMEOUT")
+            + 10
+        )
+        minutes, seconds = divmod(timeout, 60)
+        hours, minutes = divmod(minutes, 60)
+
+        endtime = time.time() + timeout
+        strtime = datetime.fromtimestamp(endtime).strftime("%Y-%m-%d %H:%M:%S")
+        self.logger.info(
+            "Timeout for checkout at: %s (%sh %sm %ss)",
+            strtime,
+            hours,
+            minutes,
+            seconds,
+            extra={"user_log": True},
+        )
+        return endtime
 
     def checkout(self, test_suite_name, test_runners, dataset, main_suite_id):
         """Checkout an environment for a test suite.
@@ -347,30 +361,44 @@ class EnvironmentProvider:  # pylint:disable=too-many-instance-attributes
         :return: The test suite and environment json for this checkout.
         :rtype: dict
         """
+        self.logger.info("Checkout environment for %r", test_suite_name, extra={"user_log": True})
         self.new_dataset(dataset)
 
         self.set_total_test_count_and_test_runners(test_runners)
+
         self.logger.info(
-            "Total test count : %r", self.etos.config.get("TOTAL_TEST_COUNT")
+            "Total test count: %d",
+            self.etos.config.get("TOTAL_TEST_COUNT"),
+            extra={"user_log": True},
         )
         self.logger.info(
             "Total testrunners: %r",
             self.etos.config.get("NUMBER_OF_TESTRUNNERS"),
+            extra={"user_log": True},
         )
+
+        self.logger.info(
+            "Checking out IUTs from %r", self.iut_provider.id, extra={"user_log": True}
+        )
+        self.logger.info(
+            "Checking out execution spaces from %r",
+            self.execution_space_provider.id,
+            extra={"user_log": True},
+        )
+        self.logger.info(
+            "Checking out log areas from %r",
+            self.log_area_provider.id,
+            extra={"user_log": True},
+        )
+
         test_suite = TestSuite(
             test_suite_name,
             main_suite_id,
             self.environment_provider_config,
             self.database,
         )
-
-        timeout = time.time() + (
-            self.etos.config.get("WAIT_FOR_IUT_TIMEOUT")
-            + self.etos.config.get("WAIT_FOR_EXECUTION_SPACE_TIMEOUT")
-            + self.etos.config.get("WAIT_FOR_LOG_AREA_TIMEOUT")
-            + 10
-        )
         finished = []
+        timeout = self.checkout_timeout()
         while time.time() < timeout:
             self.set_total_test_count_and_test_runners(test_runners)
             # Check out and assign IUTs to test runners.
@@ -406,6 +434,12 @@ class EnvironmentProvider:  # pylint:disable=too-many-instance-attributes
                         test_runner, iut, suite, test_runners[test_runner]["priority"]
                     )
                     self.send_environment_events(sub_suite)
+
+                    self.logger.info(
+                        "Environment for %r checked out and is ready for use",
+                        sub_suite["name"],
+                        extra={"user_log": True},
+                    )
                 finished.append(test_runner)
 
             # Remove finished sub suites.
@@ -428,6 +462,11 @@ class EnvironmentProvider:  # pylint:disable=too-many-instance-attributes
         # This makes sure that we can cleanup if anything breaks.
         self.verify_json(test_suite_json)
 
+        self.logger.info(
+            "All environments for test suite %r have been checked out",
+            test_suite_name,
+            extra={"user_log": True},
+        )
         return test_suite_json
 
     def wait_for_main_suite(self, test_suite_id):
@@ -463,14 +502,13 @@ class EnvironmentProvider:  # pylint:disable=too-many-instance-attributes
             ), "If multiple datasets are provided it must correspond with number of test suites"
         else:
             datasets = [datasets] * len(test_suites)
+
         for test_suite_name, test_runners in test_suites.items():
             triggered = None
             try:
                 main_suite = self.wait_for_main_suite(self.suite_runner_ids.pop(0))
                 if main_suite is None:
-                    raise TimeoutError(
-                        "Timed out while waiting for test suite started from ESR"
-                    )
+                    raise TimeoutError("Timed out while waiting for test suite started from ESR")
                 main_suite_id = main_suite["meta"]["id"]
 
                 triggered = self.etos.events.send_activity_triggered(
@@ -478,13 +516,13 @@ class EnvironmentProvider:  # pylint:disable=too-many-instance-attributes
                     {"CONTEXT": main_suite_id},
                     executionType="AUTOMATED",
                 )
+
                 self.etos.config.set("environment_provider_context", triggered)
                 self.etos.events.send_activity_started(triggered)
-                dataset = datasets.pop(0)
-                test_suite_json = self.checkout(
-                    test_suite_name, test_runners, dataset, main_suite_id
+
+                suites.append(
+                    self.checkout(test_suite_name, test_runners, datasets.pop(0), main_suite_id)
                 )
-                suites.append(test_suite_json)
             except Exception as exception:  # pylint:disable=broad-except
                 error = exception
                 raise
@@ -513,10 +551,7 @@ class EnvironmentProvider:  # pylint:disable=too-many-instance-attributes
             traceback.print_exc()
             return {"error": str(exception), "details": traceback.format_exc()}
         finally:
-            if (
-                self.etos.publisher is not None
-                and not self.etos.debug.disable_sending_events
-            ):
+            if self.etos.publisher is not None and not self.etos.debug.disable_sending_events:
                 self.etos.publisher.wait_for_unpublished_events()
                 self.etos.publisher.stop()
 

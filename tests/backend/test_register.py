@@ -52,14 +52,10 @@ class TestRegisterBackend(unittest.TestCase):
         request = FakeRequest()
         test_iut_provider = {"iut": {"id": "providertest"}}
         request.fake_params["iut_provider"] = test_iut_provider
-        self.logger.info(
-            "STEP: Get IUT provider from request via the register backend."
-        )
+        self.logger.info("STEP: Get IUT provider from request via the register backend.")
         response_iut_provider = get_iut_provider(request)
 
-        self.logger.info(
-            "STEP: Verify that the backend returns the correct iut provider."
-        )
+        self.logger.info("STEP: Verify that the backend returns the correct iut provider.")
         self.assertDictEqual(test_iut_provider, response_iut_provider)
 
     def test_iut_provider_none(self):
@@ -73,9 +69,7 @@ class TestRegisterBackend(unittest.TestCase):
             2. Verify that the backend returns None.
         """
         request = FakeRequest()
-        self.logger.info(
-            "STEP: Get IUT provider from request via the register backend."
-        )
+        self.logger.info("STEP: Get IUT provider from request via the register backend.")
         response_iut_provider = get_iut_provider(request)
 
         self.logger.info("STEP: Verify that the backend returns None.")
@@ -103,9 +97,7 @@ class TestRegisterBackend(unittest.TestCase):
         self.logger.info(
             "STEP: Verify that the backend returns the correct execution space provider."
         )
-        self.assertDictEqual(
-            test_execution_space_provider, response_execution_space_provider
-        )
+        self.assertDictEqual(test_execution_space_provider, response_execution_space_provider)
 
     def test_execution_space_provider_none(self):
         """Test that the register backend returns None if execution space provider is not set.
@@ -140,14 +132,10 @@ class TestRegisterBackend(unittest.TestCase):
         request = FakeRequest()
         test_log_area_provider = {"log": {"id": "providertest"}}
         request.fake_params["log_area_provider"] = test_log_area_provider
-        self.logger.info(
-            "STEP: Get log area provider from request via the register backend."
-        )
+        self.logger.info("STEP: Get log area provider from request via the register backend.")
         response_log_area_provider = get_log_area_provider(request)
 
-        self.logger.info(
-            "STEP: Verify that the backend returns the correct log area provider."
-        )
+        self.logger.info("STEP: Verify that the backend returns the correct log area provider.")
         self.assertDictEqual(test_log_area_provider, response_log_area_provider)
 
     def test_log_area_provider_none(self):
@@ -161,9 +149,7 @@ class TestRegisterBackend(unittest.TestCase):
             2. Verify that the backend returns None.
         """
         request = FakeRequest()
-        self.logger.info(
-            "STEP: Get log area provider from request via the register backend."
-        )
+        self.logger.info("STEP: Get log area provider from request via the register backend.")
         response_log_area_provider = get_log_area_provider(request)
 
         self.logger.info("STEP: Verify that the backend returns None.")
@@ -179,9 +165,7 @@ class TestRegisterBackend(unittest.TestCase):
             1. Verify that the json_to_dict converts JSON strings to dictionary.
         """
         json_string = '{"data": "testing"}'
-        self.logger.info(
-            "STEP: Verify that the json_to_dict converts JSON strings to dictionary."
-        )
+        self.logger.info("STEP: Verify that the json_to_dict converts JSON strings to dictionary.")
         json_dict = json_to_dict(json_string)
         self.assertDictEqual(json_dict, json.loads(json_string))
 
@@ -194,9 +178,7 @@ class TestRegisterBackend(unittest.TestCase):
         Test steps:
             1. Verify that the json_to_dict returns None when json_str is None.
         """
-        self.logger.info(
-            "Verify that the json_to_dict returns None when json_str is None."
-        )
+        self.logger.info("Verify that the json_to_dict returns None when json_str is None.")
         self.assertIsNone(json_to_dict(None))
 
     def test_json_to_dict_already_dict(self):
@@ -238,13 +220,9 @@ class TestRegisterBackend(unittest.TestCase):
         self.logger.info("STEP: Register an IUT provider with the register backend.")
         response = register(provider_registry, iut_provider=provider)
 
-        self.logger.info(
-            "STEP: Verify that the IUT provider was stored in the database."
-        )
+        self.logger.info("STEP: Verify that the IUT provider was stored in the database.")
         stored_provider = json.loads(
-            fake_database.reader.hget(
-                "EnvironmentProvider:IUTProviders", "iut_provider_test"
-            )
+            fake_database.reader.hget("EnvironmentProvider:IUTProviders", "iut_provider_test")
         )
         self.assertDictEqual(stored_provider, provider)
         self.assertTrue(response)
@@ -269,14 +247,10 @@ class TestRegisterBackend(unittest.TestCase):
             }
         }
         provider_registry = ProviderRegistry(etos, jsontas, fake_database)
-        self.logger.info(
-            "STEP: Register a log area provider with the register backend."
-        )
+        self.logger.info("STEP: Register a log area provider with the register backend.")
         response = register(provider_registry, log_area_provider=provider)
 
-        self.logger.info(
-            "STEP: Verify that the log area provider was stored in the database."
-        )
+        self.logger.info("STEP: Verify that the log area provider was stored in the database.")
         stored_provider = json.loads(
             fake_database.reader.hget(
                 "EnvironmentProvider:LogAreaProviders", "log_area_provider_test"
@@ -305,9 +279,7 @@ class TestRegisterBackend(unittest.TestCase):
             }
         }
         provider_registry = ProviderRegistry(etos, jsontas, fake_database)
-        self.logger.info(
-            "STEP: Register an execution space provider with the register backend."
-        )
+        self.logger.info("STEP: Register an execution space provider with the register backend.")
         response = register(provider_registry, execution_space_provider=provider)
 
         self.logger.info(
@@ -354,9 +326,7 @@ class TestRegisterBackend(unittest.TestCase):
             }
         }
         provider_registry = ProviderRegistry(etos, jsontas, fake_database)
-        self.logger.info(
-            "STEP: Register one of each provider with the register backend."
-        )
+        self.logger.info("STEP: Register one of each provider with the register backend.")
         response = register(
             provider_registry,
             iut_provider=test_iut_provider,
@@ -382,9 +352,7 @@ class TestRegisterBackend(unittest.TestCase):
         )
         self.assertDictEqual(stored_log_area_provider, test_log_area_provider)
         stored_iut_provider = json.loads(
-            fake_database.reader.hget(
-                "EnvironmentProvider:IUTProviders", "iut_provider_test"
-            )
+            fake_database.reader.hget("EnvironmentProvider:IUTProviders", "iut_provider_test")
         )
         self.assertDictEqual(stored_iut_provider, test_iut_provider)
         self.assertTrue(response)

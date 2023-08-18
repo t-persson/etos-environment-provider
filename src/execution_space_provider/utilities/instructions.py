@@ -51,6 +51,4 @@ class Instructions(DataStructure):  # pylint:disable=too-few-public-methods
         :param instructions: The instructions dictionary in which to add environments.
         :type instructions: dict
         """
-        instructions["environment"]["ETOS_FEATURE_CLM"] = os.getenv(
-            "ETOS_FEATURE_CLM", "true"
-        )
+        instructions["environment"]["ETOS_FEATURE_CLM"] = os.getenv("ETOS_FEATURE_CLM", "true")

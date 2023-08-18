@@ -74,9 +74,7 @@ class TestExternalLogArea(unittest.TestCase):
             provider = ExternalProvider(etos, jsontas, ruleset)
             self.logger.info("STEP: Send a start request.")
             start_id = provider.start(1, 2)
-            self.logger.info(
-                "STEP: Verify that the ID from the start request is returned."
-            )
+            self.logger.info("STEP: Verify that the ID from the start request is returned.")
             self.assertEqual(start_id, expected_start_id)
 
     def test_provider_start_http_exception(self):
@@ -105,9 +103,7 @@ class TestExternalLogArea(unittest.TestCase):
         )
         expected_start_id = "123"
 
-        with FakeServer(
-            ["bad_request", "ok"], [{}, {"id": expected_start_id}]
-        ) as server:
+        with FakeServer(["bad_request", "ok"], [{}, {"id": expected_start_id}]) as server:
             ruleset = {
                 "id": "test_provider_start_http_exception",
                 "start": {"host": server.host},
@@ -116,9 +112,7 @@ class TestExternalLogArea(unittest.TestCase):
             provider = ExternalProvider(etos, jsontas, ruleset)
             self.logger.info("STEP: Send a start request that fails.")
             start_id = provider.start(1, 2)
-            self.logger.info(
-                "STEP: Verify that the start method tries again on HTTP errors."
-            )
+            self.logger.info("STEP: Verify that the start method tries again on HTTP errors.")
             self.assertGreaterEqual(server.nbr_of_requests, 2)
             self.assertEqual(start_id, expected_start_id)
 
@@ -158,9 +152,7 @@ class TestExternalLogArea(unittest.TestCase):
             self.logger.info("STEP: Send a start request which will never finish.")
 
             with self.assertRaises(TimeoutError):
-                self.logger.info(
-                    "STEP: Verify that the start method raises TimeoutError."
-                )
+                self.logger.info("STEP: Verify that the start method raises TimeoutError.")
                 provider.start(1, 2)
 
     def test_provider_stop(self):
@@ -278,8 +270,7 @@ class TestExternalLogArea(unittest.TestCase):
             self.logger.info("STEP: Send a stop request that fails.")
             with self.assertRaises(LogAreaCheckinFailed):
                 self.logger.info(
-                    "STEP: Verify that the checkin method raises LogAreaCheckinFailed "
-                    "exception."
+                    "STEP: Verify that the checkin method raises LogAreaCheckinFailed exception."
                 )
                 provider.checkin(log_area)
 
@@ -318,9 +309,7 @@ class TestExternalLogArea(unittest.TestCase):
             provider = ExternalProvider(etos, jsontas, ruleset)
             self.logger.info("STEP: Send a stop request that fails.")
             with self.assertRaises(TimeoutError):
-                self.logger.info(
-                    "STEP: Verify that the checkin method raises a TimeoutError."
-                )
+                self.logger.info("STEP: Verify that the checkin method raises a TimeoutError.")
                 provider.checkin(log_area)
 
     def test_provider_status(self):
@@ -353,13 +342,9 @@ class TestExternalLogArea(unittest.TestCase):
             ruleset = {"id": "test_provider_status", "status": {"host": server.host}}
             self.logger.info("STEP: Initialize an external provider.")
             provider = ExternalProvider(etos, jsontas, ruleset)
-            self.logger.info(
-                "STEP: Send a status request for a started log area provider."
-            )
+            self.logger.info("STEP: Send a status request for a started log area provider.")
             response = provider.wait("1")
-            self.logger.info(
-                "STEP: Verify that the wait method return response on DONE."
-            )
+            self.logger.info("STEP: Verify that the wait method return response on DONE.")
             self.assertEqual(response.get("test_id"), test_id)
 
     def test_provider_status_pending(self):
@@ -395,9 +380,7 @@ class TestExternalLogArea(unittest.TestCase):
             }
             self.logger.info("STEP: Initialize an external provider.")
             provider = ExternalProvider(etos, jsontas, ruleset)
-            self.logger.info(
-                "STEP: Send a status request for a started log area provider."
-            )
+            self.logger.info("STEP: Send a status request for a started log area provider.")
             provider.wait("1")
             self.logger.info("STEP: Verify that the wait method waits on PENDING.")
             self.assertEqual(server.nbr_of_requests, len(responses))
@@ -428,22 +411,16 @@ class TestExternalLogArea(unittest.TestCase):
             }
         )
         description = "something failed!"
-        with FakeServer(
-            "ok", {"status": "FAILED", "description": description}
-        ) as server:
+        with FakeServer("ok", {"status": "FAILED", "description": description}) as server:
             ruleset = {
                 "id": "test_provider_status_failed",
                 "status": {"host": server.host},
             }
             self.logger.info("STEP: Initialize an external provider.")
             provider = ExternalProvider(etos, jsontas, ruleset)
-            self.logger.info(
-                "STEP: Send a status request for a started log area provider."
-            )
+            self.logger.info("STEP: Send a status request for a started log area provider.")
             with self.assertRaises(LogAreaCheckoutFailed):
-                self.logger.info(
-                    "STEP: Verify that the wait method raises LogAreaCheckoutFailed."
-                )
+                self.logger.info("STEP: Verify that the wait method raises LogAreaCheckoutFailed.")
                 provider.wait("1")
 
     def test_provider_status_http_exceptions(self):
@@ -485,9 +462,7 @@ class TestExternalLogArea(unittest.TestCase):
                 }
                 self.logger.info("STEP: Initialize an external provider.")
                 provider = ExternalProvider(etos, jsontas, ruleset)
-                self.logger.info(
-                    "STEP: Send a status request for a started log area provider."
-                )
+                self.logger.info("STEP: Send a status request for a started log area provider.")
                 with self.assertRaises(exception):
                     self.logger.info(
                         "STEP: Verify that the wait method raises the correct exception."
@@ -528,9 +503,7 @@ class TestExternalLogArea(unittest.TestCase):
             provider = ExternalProvider(etos, jsontas, ruleset)
             self.logger.info("STEP: Send a status request that times out.")
             with self.assertRaises(TimeoutError):
-                self.logger.info(
-                    "STEP: Verify that the wait method raises TimeoutError."
-                )
+                self.logger.info("STEP: Verify that the wait method raises TimeoutError.")
                 provider.wait("1")
 
     def test_request_and_wait(self):
@@ -582,9 +555,7 @@ class TestExternalLogArea(unittest.TestCase):
             }
             self.logger.info("STEP: Initialize an external provider.")
             provider = ExternalProvider(etos, jsontas, ruleset)
-            self.logger.info(
-                "STEP: Send a checkout request via the external log area provider."
-            )
+            self.logger.info("STEP: Send a checkout request via the external log area provider.")
             log_areas = provider.request_and_wait_for_log_areas()
             self.logger.info(
                 "STEP: Verify that the provider returns a list of checked out log areas."

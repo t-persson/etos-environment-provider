@@ -16,8 +16,8 @@
 """Handler for graphql queries."""
 import json
 
-import urllib.parse
 from http.server import BaseHTTPRequestHandler
+from graphql import parse
 
 # pylint:disable=invalid-name
 
@@ -44,12 +44,16 @@ class GraphQLHandler(BaseHTTPRequestHandler):
 
         :param request_data: Data to parse query string from.
         :type request_data: byte
-        :return: The GraphQL query string.
+        :return: The GraphQL query name.
         :rtype: str
         """
-        data_dict = urllib.parse.parse_qs(request_data)
-        data_str = data_dict[b"query"][0].decode("utf-8")
-        return data_str.splitlines()[1].lstrip(" ").rstrip()
+        data_dict = json.loads(request_data)
+        parsed = parse(data_dict["query"]).to_dict()
+        for definition in parsed.get("definitions", []):
+            for selection in definition.get("selection_set", {}).get("selections", []):
+                query_name = selection.get("name", {}).get("value")
+                return query_name
+        raise TypeError("Not a valid GraphQL query")
 
     def test_execution_recipe_collection_created(self):
         """Create a fake tercc event.
@@ -69,12 +73,8 @@ class GraphQLHandler(BaseHTTPRequestHandler):
                                     {
                                         "links": {
                                             "__typename": "ArtifactCreated",
-                                            "data": {
-                                                "identity": "pkg:test/environment-provider"
-                                            },
-                                            "meta": {
-                                                "id": self.tercc["links"][0]["target"]
-                                            },
+                                            "data": {"identity": "pkg:test/environment-provider"},
+                                            "meta": {"id": self.tercc["links"][0]["target"]},
                                         }
                                     }
                                 ],
@@ -94,13 +94,7 @@ class GraphQLHandler(BaseHTTPRequestHandler):
         return {
             "data": {
                 "activityTriggered": {
-                    "edges": [
-                        {
-                            "node": {
-                                "meta": {"id": "2ec8b7db-1cdd-417a-9cf8-9cec370b117f"}
-                            }
-                        }
-                    ]
+                    "edges": [{"node": {"meta": {"id": "2ec8b7db-1cdd-417a-9cf8-9cec370b117f"}}}]
                 }
             }
         }
@@ -111,11 +105,7 @@ class GraphQLHandler(BaseHTTPRequestHandler):
         :return: A graphql response with an artifact published event.
         :rtype dict
         """
-        return {
-            "data": {
-                "artifactPublished": {"edges": [{"node": {"data": {"locations": []}}}]}
-            }
-        }
+        return {"data": {"artifactPublished": {"edges": [{"node": {"data": {"locations": []}}}]}}}
 
     def test_suite_started(self):
         """Create a fake test suite started to simulate ESR.
@@ -126,13 +116,7 @@ class GraphQLHandler(BaseHTTPRequestHandler):
         return {
             "data": {
                 "testSuiteStarted": {
-                    "edges": [
-                        {
-                            "node": {
-                                "meta": {"id": "3d1cab0e-dacb-4991-afac-7581eea4a3df"}
-                            }
-                        }
-                    ]
+                    "edges": [{"node": {"meta": {"id": "3d1cab0e-dacb-4991-afac-7581eea4a3df"}}}]
                 }
             }
         }
@@ -140,15 +124,15 @@ class GraphQLHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         """Handle graphql post requests for the environment provider tests."""
         request_data = self.rfile.read(int(self.headers["Content-Length"]))
-        query = self.get_gql_query(request_data)
+        query_name = self.get_gql_query(request_data)
 
-        if query.startswith("testExecutionRecipeCollectionCreated"):
+        if query_name == "testExecutionRecipeCollectionCreated":
             response = self.test_execution_recipe_collection_created()
-        elif query.startswith("activityTriggered"):
+        elif query_name == "activityTriggered":
             response = self.activity_triggered()
-        elif query.startswith("artifactPublished"):
+        elif query_name == "artifactPublished":
             response = self.artifact_published()
-        elif query.startswith("testSuiteStarted"):
+        elif query_name == "testSuiteStarted":
             response = self.test_suite_started()
         else:
             response = None

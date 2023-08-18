@@ -126,9 +126,7 @@ class TestSuite:
         }
     """
 
-    def __init__(
-        self, test_suite_name, suite_runner_id, environment_provider_config, database
-    ):
+    def __init__(self, test_suite_name, suite_runner_id, environment_provider_config, database):
         """Initialize test suite representation.
 
         :param test_suite_name: Name of the test suite.

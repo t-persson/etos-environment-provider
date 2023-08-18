@@ -58,9 +58,7 @@ class TestCommonFunctionality(unittest.TestCase):
         request.force_media_none = True
         test_suite_id = "b58415d4-2f39-4ab0-8763-7277e18f9606"
         request.fake_params["suite_id"] = test_suite_id
-        self.logger.info(
-            "STEP: Get suite id from request via the configure backend without media."
-        )
+        self.logger.info("STEP: Get suite id from request via the configure backend without media.")
         response_suite_id = get_suite_id(request)
 
         self.logger.info("STEP: Verify that the backend returns the suite id.")
