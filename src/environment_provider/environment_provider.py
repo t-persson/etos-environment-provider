@@ -34,6 +34,7 @@ from .lib.config import Config
 from .lib.test_suite import TestSuite
 from .lib.registry import ProviderRegistry
 from .lib.json_dumps import JsonDumps
+from .lib.encrypt import Encrypt
 from .lib.uuid_generate import UuidGenerate
 from .lib.join import Join
 
@@ -95,6 +96,7 @@ class EnvironmentProvider:  # pylint:disable=too-many-instance-attributes
         self.dataset.add("json_dumps", JsonDumps)
         self.dataset.add("uuid_generate", UuidGenerate)
         self.dataset.add("join", Join)
+        self.dataset.add("encrypt", Encrypt)
         self.database = self.test_db or Database()
         self.registry = ProviderRegistry(self.etos, self.jsontas, self.database)
 
