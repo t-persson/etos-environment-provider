@@ -14,7 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Execution space list module."""
+import os
 import logging
+from environment_provider.lib.encrypt import encrypt
 from ..execution_space import ExecutionSpace
 from ..exceptions import NoExecutionSpaceFound, ExecutionSpaceNotAvailable
 from .instructions import Instructions
@@ -48,6 +50,12 @@ class List:  # pylint:disable=too-few-public-methods
     def add_instructions(self):
         """Add execution space spin-up instructions."""
         rabbitmq = self.etos.config.get("rabbitmq")
+        rabbitmq_password = rabbitmq.get("password")
+        if os.getenv("ETOS_ENCRYPTION_KEY") is not None:
+            rabbitmq_password = {
+                "$decrypt": {"value": encrypt(rabbitmq.password, os.getenv("ETOS_ENCRYPTION_KEY"))}
+            }
+
         self.dataset.add(
             "instructions",
             {
@@ -55,7 +63,7 @@ class List:  # pylint:disable=too-few-public-methods
                 "environment": {
                     "RABBITMQ_HOST": rabbitmq.get("host"),
                     "RABBITMQ_USERNAME": rabbitmq.get("username"),
-                    "RABBITMQ_PASSWORD": rabbitmq.get("password"),
+                    "RABBITMQ_PASSWORD": rabbitmq_password,
                     "RABBITMQ_EXCHANGE": rabbitmq.get("exchange"),
                     "RABBITMQ_PORT": rabbitmq.get("port"),
                     "RABBITMQ_VHOST": rabbitmq.get("vhost"),
