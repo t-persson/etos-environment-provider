@@ -52,9 +52,9 @@ class List:  # pylint:disable=too-few-public-methods
         rabbitmq = self.etos.config.get("rabbitmq")
         rabbitmq_password = rabbitmq.get("password")
         if os.getenv("ETOS_ENCRYPTION_KEY") is not None:
-            rabbitmq_password = {
-                "$decrypt": {"value": encrypt(rabbitmq_password, os.getenv("ETOS_ENCRYPTION_KEY"))}
-            }
+            rabbitmq_password = encrypt(
+                rabbitmq_password.encode(), os.getenv("ETOS_ENCRYPTION_KEY")
+            )
 
         self.dataset.add(
             "instructions",
