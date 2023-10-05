@@ -166,7 +166,9 @@ class ExternalProvider:
                 "ETOS_GRAPHQL_SERVER": self.etos.debug.graphql_server,
                 "ETOS_API": self.etos.debug.etos_api,
                 "ETOS_ENVIRONMENT_PROVIDER": self.etos.debug.environment_provider,
-                "ETR_VERSION": os.getenv("ETR_VERSION",)
+                "ETR_VERSION": os.getenv(
+                    "ETR_VERSION",
+                ),
             },
             "artifact_id": self.dataset.get("artifact_id"),
             "artifact_created": self.dataset.get("artifact_created"),
