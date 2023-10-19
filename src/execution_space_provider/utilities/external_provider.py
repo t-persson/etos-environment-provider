@@ -159,7 +159,7 @@ class ExternalProvider:
                 "RABBITMQ_USERNAME": rabbitmq.get("username"),
                 "RABBITMQ_PASSWORD": rabbitmq_password,
                 "RABBITMQ_EXCHANGE": rabbitmq.get("exchange"),
-                "RABBITMQ_PORT": rabbitmq.get("port"),
+                "RABBITMQ_PORT": str(rabbitmq.get("port")),
                 "RABBITMQ_VHOST": rabbitmq.get("vhost"),
                 "RABBITMQ_SSL": rabbitmq.get("ssl"),
                 "SOURCE_HOST": self.etos.config.get("source").get("host"),
