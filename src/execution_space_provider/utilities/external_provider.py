@@ -21,6 +21,7 @@ import logging
 from copy import deepcopy
 
 import requests
+from environment_provider.lib.encrypt import encrypt
 
 from ..exceptions import (
     ExecutionSpaceCheckinFailed,
@@ -142,10 +143,33 @@ class ExternalProvider:
         :rtype: str
         """
         self.logger.debug("Start external execution space provider")
+        rabbitmq = self.etos.config.get("rabbitmq")
+        rabbitmq_password = rabbitmq.get("password")
+        if os.getenv("ETOS_ENCRYPTION_KEY") is not None:
+            rabbitmq_password = encrypt(
+                rabbitmq_password.encode(), os.getenv("ETOS_ENCRYPTION_KEY")
+            )
         data = {
             "minimum_amount": minimum_amount,
             "maximum_amount": maximum_amount,
             "identity": self.identity.to_string(),
+            "test_runner": self.dataset.get("test_runner"),
+            "environment": {
+                "RABBITMQ_HOST": rabbitmq.get("host"),
+                "RABBITMQ_USERNAME": rabbitmq.get("username"),
+                "RABBITMQ_PASSWORD": rabbitmq_password,
+                "RABBITMQ_EXCHANGE": rabbitmq.get("exchange"),
+                "RABBITMQ_PORT": rabbitmq.get("port"),
+                "RABBITMQ_VHOST": rabbitmq.get("vhost"),
+                "RABBITMQ_SSL": rabbitmq.get("ssl"),
+                "SOURCE_HOST": self.etos.config.get("source").get("host"),
+                "ETOS_GRAPHQL_SERVER": self.etos.debug.graphql_server,
+                "ETOS_API": self.etos.debug.etos_api,
+                "ETOS_ENVIRONMENT_PROVIDER": self.etos.debug.environment_provider,
+                "ETR_VERSION": os.getenv(
+                    "ETR_VERSION",
+                ),
+            },
             "artifact_id": self.dataset.get("artifact_id"),
             "artifact_created": self.dataset.get("artifact_created"),
             "artifact_published": self.dataset.get("artifact_published"),
