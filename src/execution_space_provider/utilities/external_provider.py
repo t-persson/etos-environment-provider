@@ -154,14 +154,14 @@ class ExternalProvider:
             "maximum_amount": maximum_amount,
             "identity": self.identity.to_string(),
             "test_runner": self.dataset.get("test_runner"),
-            "environment": {
+            "environment": {  # All environments must be string
                 "RABBITMQ_HOST": rabbitmq.get("host"),
                 "RABBITMQ_USERNAME": rabbitmq.get("username"),
                 "RABBITMQ_PASSWORD": rabbitmq_password,
                 "RABBITMQ_EXCHANGE": rabbitmq.get("exchange"),
                 "RABBITMQ_PORT": str(rabbitmq.get("port")),
                 "RABBITMQ_VHOST": rabbitmq.get("vhost"),
-                "RABBITMQ_SSL": rabbitmq.get("ssl"),
+                "RABBITMQ_SSL": str(rabbitmq.get("ssl")),
                 "SOURCE_HOST": self.etos.config.get("source").get("host"),
                 "ETOS_GRAPHQL_SERVER": self.etos.debug.graphql_server,
                 "ETOS_API": self.etos.debug.etos_api,
