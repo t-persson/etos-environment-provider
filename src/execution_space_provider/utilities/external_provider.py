@@ -161,7 +161,7 @@ class ExternalProvider:
                 "RABBITMQ_EXCHANGE": rabbitmq.get("exchange"),
                 "RABBITMQ_PORT": str(rabbitmq.get("port")),
                 "RABBITMQ_VHOST": rabbitmq.get("vhost"),
-                "RABBITMQ_SSL": str(rabbitmq.get("ssl")),
+                "RABBITMQ_SSL": str(rabbitmq.get("ssl", "").lower()),
                 "SOURCE_HOST": self.etos.config.get("source").get("host"),
                 "ETOS_GRAPHQL_SERVER": self.etos.debug.graphql_server,
                 "ETOS_API": self.etos.debug.etos_api,
