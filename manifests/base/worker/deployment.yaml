@@ -18,11 +18,9 @@ spec:
       serviceAccountName: etos-environment-provider-worker
       containers:
         - name: etos-environment-provider-worker
-          image: "registry.nordix.org/eiffel/etos-environment-provider-worker:2.2.6"
+          image: registry.nordix.org/eiffel/etos-environment-provider-worker:b07425c3
           imagePullPolicy: IfNotPresent
           envFrom:
-          - configMapRef:
-              name: etos-environment-provider-worker
-      # This grace period ensures that the environment provider will wait
-      # for the environment checkouts to complete before shutting down.
+            - configMapRef:
+                name: etos-environment-provider-worker
       terminationGracePeriodSeconds: 4250
