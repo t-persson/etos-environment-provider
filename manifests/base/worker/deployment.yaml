@@ -18,7 +18,7 @@ spec:
       serviceAccountName: etos-environment-provider-worker
       containers:
         - name: etos-environment-provider-worker
-          image: registry.nordix.org/eiffel/etos-environment-provider-worker:bbdb2a8a
+          image: registry.nordix.org/eiffel/etos-environment-provider-worker:976e9b03
           imagePullPolicy: IfNotPresent
           envFrom:
             - configMapRef:
