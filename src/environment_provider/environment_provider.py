@@ -36,7 +36,6 @@ from execution_space_provider.execution_space import ExecutionSpace
 from log_area_provider.log_area import LogArea
 
 from .lib.config import Config
-from .lib.database import ETCDPath
 from .lib.encrypt import Encrypt
 from .lib.graphql import request_main_suite
 from .lib.join import Join
@@ -292,11 +291,6 @@ class EnvironmentProvider:  # pylint:disable=too-many-instance-attributes
             {"CONTEXT": self.etos.config.get("environment_provider_context")},
             {"name": sub_suite.get("name"), "uri": url},
         )
-
-        # TODO: These shall be removed when API version v1 is used by the ESR and API.
-        environment = ETCDPath("/environment")
-        environment.join(f"{event_id}/testrun-id").write(self.suite_id)
-        environment.join(f"{event_id}/suite-id").write(sub_suite["test_suite_started_id"])
 
         suite = self.registry.testrun.join(f"suite/{sub_suite['test_suite_started_id']}")
         suite.join(f"/subsuite/{event_id}/suite").write(json.dumps(sub_suite))
