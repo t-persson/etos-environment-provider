@@ -193,8 +193,6 @@ class ExternalProvider:
         etos_rabbitmq = self.etos.config.etos_rabbitmq_publisher_data()
         rabbitmq_password = rabbitmq.get("password", "")
         etos_rabbitmq_password = etos_rabbitmq.get("password", "")
-        rabbitmq_password = rabbitmq.get("password", "")
-        etos_rabbitmq_password = etos_rabbitmq.get("password", "")
         if os.getenv("ETOS_ENCRYPTION_KEY") is not None:
             rabbitmq_password = encrypt(
                 rabbitmq_password.encode(), os.getenv("ETOS_ENCRYPTION_KEY", "")
