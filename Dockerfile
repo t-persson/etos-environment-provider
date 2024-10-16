@@ -1,3 +1,6 @@
+# Dockerfile to use with the controller environment where we run the environment provider as a Job
+# instead of running it as an imported service in the suite runner. The environment provider uses
+# ExecptionGroups when running as part of the ETOS controller which is a python 3.11 feature.
 FROM python:3.11-bookworm AS build
 
 COPY . /src
