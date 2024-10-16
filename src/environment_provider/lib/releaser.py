@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Releaser of environments."""
+import sys
 import logging
 from jsontas.jsontas import JsonTas
 from opentelemetry import trace
@@ -243,5 +244,8 @@ class EnvironmentReleaser:
                 self.logger.error("Task %r failed", type(task).__name__)
                 exceptions.append(exception)
         if exceptions:
-            # pylint:disable=using-exception-groups-in-unsupported-version
-            raise ExceptionGroup("Some or all release tasks failed", exceptions)
+            if sys.version_info.minor >= 11:
+                raise ExceptionGroup("Some or all release tasks failed", exceptions)
+            # This is a fallback for when using an older python version.
+            # pylint:disable=broad-exception-raised
+            raise Exception("Some or all release tasks failed: %r" % "\n".join(exceptions))

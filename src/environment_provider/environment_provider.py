@@ -358,9 +358,7 @@ class EnvironmentProvider:  # pylint:disable=too-many-instance-attributes
         )
         return endtime
 
-    def checkout(
-        self, request: EnvironmentRequestSchema
-    ) -> None:
+    def checkout(self, request: EnvironmentRequestSchema) -> None:
         """Checkout an environment for a test suite.
 
         A request can have multiple environments due to IUT availability or the amount of
