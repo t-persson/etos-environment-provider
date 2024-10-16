@@ -14,15 +14,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Test suite module."""
-from iut_provider.iut import Iut
 from etos_lib.kubernetes.schemas.environment_request import EnvironmentRequest
+from iut_provider.iut import Iut
 
 from .config import Config
 
 # pylint:disable=line-too-long
+# pylint:disable=too-many-arguments
+# pylint:disable=too-many-positional-arguments
 
 
-class TestSuite:
+class TestSuite:  # pylint:disable=too-few-public-methods
     """Test suite representation.
 
     The resulting test suite might look something like this::
@@ -143,7 +145,9 @@ class TestSuite:
         self.suite_runner_id = suite_runner_id
         self.environment_provider_config = environment_provider_config
 
-    def add(self, request: EnvironmentRequest, test_runner: str, iut: Iut, suite: dict, priority: int) -> dict:
+    def add(
+        self, request: EnvironmentRequest, test_runner: str, iut: Iut, suite: dict, priority: int
+    ) -> dict:
         """Add a new sub suite to suite.
 
         :param test_runner: The test runner to use for sub suite.

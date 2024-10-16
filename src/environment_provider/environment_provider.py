@@ -66,6 +66,10 @@ class EnvironmentProviderNotConfigured(Exception):
     """Environment provider was not configured prior to request."""
 
 
+class EnvironmentProviderError(Exception):
+    """Environment provider got an error."""
+
+
 class EnvironmentProvider:  # pylint:disable=too-many-instance-attributes
     """Environment provider."""
 
@@ -75,12 +79,14 @@ class EnvironmentProvider:  # pylint:disable=too-many-instance-attributes
     execution_space_provider = None
     testrun = None
 
-    def __init__(self, suite_runner_ids: Optional[list[str]]=None) -> None:
+    def __init__(self, suite_runner_ids: Optional[list[str]] = None) -> None:
         """Initialize ETOS, dataset, provider registry and splitter.
 
         :param suite_runner_ids: IDs from the suite runner to correlate sub suites.
         """
-        self.etos = ETOS("ETOS Environment Provider", os.getenv("HOSTNAME", "Unknown"), "Environment Provider")
+        self.etos = ETOS(
+            "ETOS Environment Provider", os.getenv("HOSTNAME", "Unknown"), "Environment Provider"
+        )
         self.environment_provider_config = Config(self.etos, suite_runner_ids)
 
         FORMAT_CONFIG.identifier = self.environment_provider_config.requests[0].spec.identifier
@@ -221,12 +227,15 @@ class EnvironmentProvider:  # pylint:disable=too-many-instance-attributes
             with NamedTemporaryFile(mode="w", delete=False) as sub_suite_file:
                 json.dump(sub_suite, sub_suite_file)
             log_area = LogArea(self.etos, sub_suite)
-            return log_area.upload(
-                sub_suite_file.name,
-                f"{sub_suite['name']}.json",
-                sub_suite["test_suite_started_id"],
-                sub_suite["sub_suite_id"],
-            ), sub_suite
+            return (
+                log_area.upload(
+                    sub_suite_file.name,
+                    f"{sub_suite['name']}.json",
+                    sub_suite["test_suite_started_id"],
+                    sub_suite["sub_suite_id"],
+                ),
+                sub_suite,
+            )
         finally:
             os.remove(sub_suite_file.name)
 
@@ -272,7 +281,9 @@ class EnvironmentProvider:  # pylint:disable=too-many-instance-attributes
             )
         return recipes
 
-    def create_environment_resource(self, request: EnvironmentRequestSchema, sub_suite: dict) -> tuple[str, dict]:
+    def create_environment_resource(
+        self, request: EnvironmentRequestSchema, sub_suite: dict
+    ) -> tuple[str, dict]:
         """Create an environment resource in Kubernetes.
 
         :param sub_suite: Sub suite to add to Environment resource.
@@ -302,12 +313,15 @@ class EnvironmentProvider:  # pylint:disable=too-many-instance-attributes
                 labels=labels,
                 ownerReferences=owners,
             ),
-            spec=EnvironmentSpec(**sub_suite.copy())
+            spec=EnvironmentSpec(**sub_suite.copy()),
         )
-        environment_client = Environment(self.kubernetes, strict=True)
+        environment_client = Environment(self.kubernetes)
         if not environment_client.create(environment):
             raise RuntimeError("Failed to create the environment for an etos testrun")
-        return f"{os.getenv('ETOS_API')}/v1alpha/testrun/{environment_id}", environment.spec.model_dump()
+        return (
+            f"{os.getenv('ETOS_API')}/v1alpha/testrun/{environment_id}",
+            environment.spec.model_dump(),
+        )
 
     def checkout_an_execution_space(self) -> ExecutionSpace:
         """Check out a single execution space.
@@ -344,26 +358,26 @@ class EnvironmentProvider:  # pylint:disable=too-many-instance-attributes
         )
         return endtime
 
-    def checkout(self, request: EnvironmentRequestSchema) -> None:
+    def checkout(
+        self, request: EnvironmentRequestSchema
+    ) -> None:
         """Checkout an environment for a test suite.
 
         A request can have multiple environments due to IUT availability or the amount of
         unique test runners in the request.
         """
+        # pylint:disable=too-many-statements
         self.logger.info("Checkout environment for %r", request.spec.name, extra={"user_log": True})
         self.new_dataset(request)
         splitter = Splitter(self.etos, request.spec.splitter)
 
-        # TODO: This is a hack to make it work without too many changes to the code.
+        # TODO: This is a hack to make the controller environment work without too many changes
+        # to the original code, since we want to run them at the same time.
         test_runners = {}
         for test in request.spec.splitter.tests:
             test_runners.setdefault(
                 test.execution.testRunner,
-                {
-                    "docker": test.execution.testRunner,
-                    "priority": 1,
-                    "unsplit_recipes": []
-                }
+                {"docker": test.execution.testRunner, "priority": 1, "unsplit_recipes": []},
             )
             test_runners[test.execution.testRunner]["unsplit_recipes"].append(test)
 
@@ -409,7 +423,8 @@ class EnvironmentProvider:  # pylint:disable=too-many-instance-attributes
                 # Check out and assign IUTs to test runners.
                 iuts = self.iut_provider.wait_for_and_checkout_iuts(
                     minimum_amount=request.spec.minimumAmount,
-                    # maximum_amount=request.spec.maximumAmount,  # TODO: Total test count changes, must check
+                    # maximum_amount=request.spec.maximumAmount,
+                    # TODO: Total test count changes, must check
                     maximum_amount=self.dataset.get(
                         "maximum_amount",
                         os.getenv(
@@ -421,7 +436,7 @@ class EnvironmentProvider:  # pylint:disable=too-many-instance-attributes
                 splitter.assign_iuts(test_runners, iuts)
                 span.set_attribute(SemConvAttributes.IUT_DESCRIPTION, str(iuts))
 
-            for test_runner in test_runners.keys():
+            for test_runner in test_runners:  # pylint:disable=consider-using-dict-items
                 self.dataset.add("test_runner", test_runner)
 
                 # No IUTs assigned to test runner
@@ -456,7 +471,9 @@ class EnvironmentProvider:  # pylint:disable=too-many-instance-attributes
                         request, test_runner, iut, suite, test_runners[test_runner]["priority"]
                     )
                     if self.environment_provider_config.etos_controller:
-                        self.send_environment_events(*self.create_environment_resource(request, sub_suite))
+                        self.send_environment_events(
+                            *self.create_environment_resource(request, sub_suite)
+                        )
                     else:
                         self.send_environment_events(*self.upload_sub_suite(sub_suite))
 
@@ -584,7 +601,8 @@ class EnvironmentProvider:  # pylint:disable=too-many-instance-attributes
         self._configure_iut(iut)  # type: ignore
         log_area = provider_client.get(request.spec.providers.logArea.id).to_dict()  # type: ignore
         self._configure_log_area(log_area)  # type: ignore
-        execution_space = provider_client.get(request.spec.providers.executionSpace.id).to_dict()  # type: ignore
+        provider_id = request.spec.providers.executionSpace.id  # type: ignore
+        execution_space = provider_client.get(provider_id).to_dict()  # type: ignore
         self._configure_execution_space(execution_space)  # type: ignore
 
     def run(self) -> dict:
@@ -625,8 +643,11 @@ def get_environment():
     try:
         status = EnvironmentProvider().run()
         if status.get("error") is not None:
-            raise Exception(status.get("error"))
-        result = {"conclusion": "Successful", "description": "Successfully provisioned an environment"}
+            raise EnvironmentProviderError(status.get("error"))
+        result = {
+            "conclusion": "Successful",
+            "description": "Successfully provisioned an environment",
+        }
         with open("/dev/termination-log", "w", encoding="utf-8") as termination_log:
             json.dump(result, termination_log)
     except:

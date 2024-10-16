@@ -30,8 +30,8 @@ from etos_lib.kubernetes.schemas.environment_request import (
 )
 from etos_lib.kubernetes import Kubernetes, EnvironmentRequest
 from etos_lib.kubernetes.schemas.common import Metadata
-from environment_provider.lib.registry import ProviderRegistry
 from jsontas.jsontas import JsonTas
+from environment_provider.lib.registry import ProviderRegistry
 
 from .graphql import request_activity_triggered, request_artifact_created
 
@@ -43,7 +43,7 @@ class Config:  # pylint:disable=too-many-instance-attributes
     __request = None
     __activity_triggered = None
 
-    def __init__(self, etos: ETOS, ids: Optional[list[str]]=None) -> None:
+    def __init__(self, etos: ETOS, ids: Optional[list[str]] = None) -> None:
         """Initialize with ETOS library and automatically load the config.
 
         :param etos: ETOS library instance.
@@ -82,7 +82,10 @@ class Config:  # pylint:disable=too-many-instance-attributes
 
     def __wait_for_activity(self) -> Optional[dict]:
         """Wait for activity triggered event."""
-        self.logger.info("Waiting for an activity triggered event %ds", self.etos.config.get("EVENT_DATA_TIMEOUT"))
+        self.logger.info(
+            "Waiting for an activity triggered event %ds",
+            self.etos.config.get("EVENT_DATA_TIMEOUT"),
+        )
         timeout = time.time() + self.etos.config.get("EVENT_DATA_TIMEOUT")  # type: ignore
         while time.time() <= timeout:
             time.sleep(1)
@@ -105,7 +108,11 @@ class Config:  # pylint:disable=too-many-instance-attributes
                 self.logger.info("No activity triggered found yet, retrying")
                 continue
             return edges[0]["node"]
-        self.logger.info("Activity triggered event not found after %ds", self.etos.config.get("EVENT_DATA_TIMEOUT"))
+        self.logger.info(
+            "Activity triggered event not found after %ds",
+            self.etos.config.get("EVENT_DATA_TIMEOUT"),
+        )
+        return None
 
     # TODO: The requests method shall not return a list in the future, this is just to
     # keep the changes backwards compatible.
@@ -114,14 +121,17 @@ class Config:  # pylint:disable=too-many-instance-attributes
         """Request returns the environment request, either from Eiffel TERCC or environment."""
         if self.__request is None:
             if self.etos_controller:
-                request_client = EnvironmentRequest(self.kubernetes, strict=True)
+                request_client = EnvironmentRequest(self.kubernetes)
                 request_name = os.getenv("REQUEST")
                 assert request_name is not None, "Environment variable REQUEST must be set!"
-                self.__request = [EnvironmentRequestSchema.model_validate(
-                    request_client.get(request_name).to_dict()  # type: ignore
-                )]
+                self.__request = [
+                    EnvironmentRequestSchema.model_validate(
+                        request_client.get(request_name).to_dict()  # type: ignore
+                    )
+                ]
             else:
-                # Whenever the environment provider is run as a part of the suite runner, this variable is set.
+                # Whenever the environment provider is run as a part of the suite runner,
+                # this variable is set.
                 tercc = json.loads(os.getenv("TERCC", "{}"))
                 self.__request = self.__request_from_tercc(tercc)
         return self.__request
@@ -134,14 +144,18 @@ class Config:  # pylint:disable=too-many-instance-attributes
         """
         if self.__activity_triggered is None:
             self.__activity_triggered = self.__wait_for_activity()
-            assert self.__activity_triggered is not None, "ActivityTriggered must exist for the environment provider"
+            assert (
+                self.__activity_triggered is not None
+            ), "ActivityTriggered must exist for the environment provider"
         try:
             return self.__activity_triggered["meta"]["id"]
         except KeyError:
             return ""
 
     def __request_from_tercc(self, tercc: dict) -> list[EnvironmentRequestSchema]:
-        assert self.ids is not None, "Suite runner IDs must be provided when running outside of controller"
+        assert (
+            self.ids is not None
+        ), "Suite runner IDs must be provided when running outside of controller"
         requests = []
         response = request_artifact_created(self.etos, tercc["links"][0]["target"])
         assert response is not None, "ArtifactCreated must exist for the environment provider"
@@ -160,25 +174,25 @@ class Config:  # pylint:disable=too-many-instance-attributes
             datasets = [datasets] * len(test_suites)
 
         for suite in test_suites:
-            requests.append(EnvironmentRequestSchema(
-                metadata=Metadata(),
-                spec=EnvironmentRequestSpec(
-                    id=self.ids.pop(0),
-                    name=suite.get("name"),
-                    identifier=tercc["meta"]["id"],
-                    artifact=artifact["meta"]["id"],
-                    identity=artifact["data"]["identity"],
-                    minimumAmount=1,
-                    maximumAmount=10,  # TODO: Ignored in environment_provider.py
-                    image="N/A",
-                    imagePullPolicy="N/A",
-                    splitter=Splitter(
-                        tests=Suite.tests_from_recipes(suite.get("recipes", []))
+            requests.append(
+                EnvironmentRequestSchema(
+                    metadata=Metadata(),
+                    spec=EnvironmentRequestSpec(
+                        id=self.ids.pop(0),
+                        name=suite.get("name"),
+                        identifier=tercc["meta"]["id"],
+                        artifact=artifact["meta"]["id"],
+                        identity=artifact["data"]["identity"],
+                        minimumAmount=1,
+                        maximumAmount=10,  # TODO: Ignored in environment_provider.py
+                        image="N/A",
+                        imagePullPolicy="N/A",
+                        splitter=Splitter(tests=Suite.tests_from_recipes(suite.get("recipes", []))),
+                        dataset=datasets.pop(0),
+                        providers=EnvironmentProviders(),
                     ),
-                    dataset=datasets.pop(0),
-                    providers=EnvironmentProviders()
                 )
-            ))
+            )
         return requests
 
     def __test_suite(self, tercc: dict) -> list[dict]:
@@ -193,7 +207,7 @@ class Config:  # pylint:disable=too-many-instance-attributes
                 raise ValueError("Only one of 'batches' or 'batchesUri' shall be set")
             if batch is not None:
                 return batch
-            elif batch_uri is not None:
+            if batch_uri is not None:
                 response = self.etos.http.get(
                     batch_uri,
                     timeout=self.etos.config.get("TEST_SUITE_TIMEOUT"),

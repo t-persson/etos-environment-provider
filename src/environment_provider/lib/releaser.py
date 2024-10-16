@@ -35,31 +35,35 @@ TRACER = trace.get_tracer(__name__)
 
 
 class Releaser:
+    """Releaser is a tool for releasing environments that have been checked out by ETOS."""
+
     logger = logging.getLogger(__name__)
 
     def __init__(self, etos: ETOS, environment: EnvironmentSchema):
+        """Set up releaser."""
         self.environment = environment
         self.etos = etos
         self.jsontas = JsonTas()
         self.kubernetes = Kubernetes()
-        self.provider_client = Provider(self.kubernetes, strict=True)
+        self.provider_client = Provider(self.kubernetes)
 
     def provider(self, provider_id: str) -> dict:
-        """Provider gets a provider by ID from Kubernetes or a database."""
+        """Get a provider by ID from Kubernetes or a database."""
         provider = self.provider_client.get(provider_id)
         assert provider is not None, f"Could not find a provider with ID {provider_id!r}"
         provider_model = ProviderSchema.model_validate(provider.to_dict())
         if provider_model.spec.jsontas:
             return provider_model.to_jsontas()
-        else:
-            return provider_model.to_external()
+        return provider_model.to_external()
 
     def run(self) -> None:
         """Run a release task for ETOS."""
-        raise NotImplemented
+        raise NotImplementedError()
 
 
 class Iut(Releaser):
+    """Iut releases IUTs checked out by ETOS."""
+
     logger = logging.getLogger(__name__)
 
     def get_provider(self) -> IutProvider:
@@ -103,12 +107,16 @@ class Iut(Releaser):
 
 
 class Executor(Releaser):
+    """Executor releases execution spaces checked out by ETOS."""
+
     logger = logging.getLogger(__name__)
 
     def get_provider(self) -> ExecutionSpaceProvider:
         """Get provider returns an execution space provider using the provider model."""
         ruleset = self.environment.spec.executor
-        assert ruleset is not None, f"There is no executor field in environment {self.environment!r}"
+        assert (
+            ruleset is not None
+        ), f"There is no executor field in environment {self.environment!r}"
         self.logger.info("Releasing executor with ruleset: %r", ruleset)
         provider_id = ruleset.get("provider_id", "")
         self.logger.info("Provider to use for release: %r", provider_id)
@@ -130,13 +138,16 @@ class Executor(Releaser):
             provider.checkin(ExecutionSpace(**ruleset))
             self.logger.info("Successfully released executor")
         except ExecutionSpaceCheckinFailed:
-            self.logger.error("Failed to release executor %r with provider %r", ruleset, provider_id)
+            self.logger.error(
+                "Failed to release executor %r with provider %r", ruleset, provider_id
+            )
             raise
 
     def run(self):
         """Run releases executors that ETOS has checked out for an environment."""
-        with TRACER.start_as_current_span(name="stop_execution_space",
-                                          kind=trace.SpanKind.CLIENT) as span:
+        with TRACER.start_as_current_span(
+            name="stop_execution_space", kind=trace.SpanKind.CLIENT
+        ) as span:
             try:
                 self.release()
             except Exception as exception:
@@ -146,12 +157,16 @@ class Executor(Releaser):
 
 
 class LogArea(Releaser):
+    """Logarea releases log areas checked out by ETOS."""
+
     logger = logging.getLogger(__name__)
 
     def get_provider(self) -> LogAreaProvider:
         """Get provider returns an log area provider using the provider model."""
         ruleset = self.environment.spec.log_area
-        assert ruleset is not None, f"There is no log area field in environment {self.environment!r}"
+        assert (
+            ruleset is not None
+        ), f"There is no log area field in environment {self.environment!r}"
         self.logger.info("Releasing log area with ruleset: %r", ruleset)
         provider_id = ruleset.get("provider_id", "")
         self.logger.info("Provider to use for release: %r", provider_id)
@@ -173,13 +188,14 @@ class LogArea(Releaser):
             provider.checkin(LogAreaSpec(**ruleset))
             self.logger.info("Successfully released log area")
         except LogAreaCheckinFailed:
-            self.logger.error("Failed to release log area %r with provider %r", ruleset, provider_id)
+            self.logger.error(
+                "Failed to release log area %r with provider %r", ruleset, provider_id
+            )
             raise
 
     def run(self):
         """Run releases log areas that ETOS has checked out for an environment."""
-        with TRACER.start_as_current_span(name="stop_log_area",
-                                          kind=trace.SpanKind.CLIENT) as span:
+        with TRACER.start_as_current_span(name="stop_log_area", kind=trace.SpanKind.CLIENT) as span:
             try:
                 self.release()
             except Exception as exception:
@@ -191,12 +207,14 @@ class LogArea(Releaser):
 
 class EnvironmentReleaser:
     """Release environments checked out by ETOS."""
+
     logger = logging.getLogger(__name__)
 
     def environment(self, environment_id: str) -> EnvironmentSchema:
         """Environment gets an environment from kubernetes with environment_id as name."""
-        client = Environment(Kubernetes(), strict=True)
-        return EnvironmentSchema.model_validate(client.get(environment_id).to_dict())  # type: ignore
+        client = Environment(Kubernetes())
+        environment = client.get(environment_id).to_dict()  # type: ignore
+        return EnvironmentSchema.model_validate(environment)
 
     def run(self, environment_id: str):
         """Run the releaser. It will check which type of environment and release it."""
@@ -207,8 +225,11 @@ class EnvironmentReleaser:
         try:
             environment = self.environment(environment_id)
         except AttributeError:
-            self.logger.exception("Could not find Environment with id %r in Kubernetes. "
-                                  "Trying to release something that's already released?", environment_id)
+            self.logger.exception(
+                "Could not find Environment with id %r in Kubernetes. "
+                "Trying to release something that's already released?",
+                environment_id,
+            )
             return
         etos.config.set("SUITE_ID", environment.spec.suite_id)
         tasks = [Iut(etos, environment), LogArea(etos, environment), Executor(etos, environment)]
@@ -218,8 +239,9 @@ class EnvironmentReleaser:
             self.logger.info("Running release task on %r", type(task).__name__)
             try:
                 task.run()
-            except Exception as exception:
+            except Exception as exception:  # pylint:disable=broad-exception-caught
                 self.logger.error("Task %r failed", type(task).__name__)
                 exceptions.append(exception)
         if exceptions:
+            # pylint:disable=using-exception-groups-in-unsupported-version
             raise ExceptionGroup("Some or all release tasks failed", exceptions)

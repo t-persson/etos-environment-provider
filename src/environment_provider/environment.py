@@ -29,9 +29,6 @@ from opentelemetry import trace
 from environment_provider.lib.database import ETCDPath
 from environment_provider.lib.registry import ProviderRegistry
 from environment_provider.lib.releaser import EnvironmentReleaser
-from etos_lib.kubernetes.schemas import Environment as EnvironmentSchema
-from etos_lib.kubernetes.schemas import Provider as ProviderSchema
-from etos_lib.kubernetes import Kubernetes, Environment, Provider
 from execution_space_provider import ExecutionSpaceProvider
 from execution_space_provider.execution_space import ExecutionSpace
 from iut_provider import IutProvider

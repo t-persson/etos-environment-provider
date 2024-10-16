@@ -114,7 +114,20 @@ class GraphQLHandler(BaseHTTPRequestHandler):
         :rtype dict:
         """
         artifact_id = self.tercc["links"][0]["target"]
-        return {"data": {"artifactCreated": {"edges": [{"node": {"data": {"identity": "pkg:test/environment-provider"}}, "meta": {"id": artifact_id}}]}}}
+        return {
+            "data": {
+                "artifactCreated": {
+                    "edges": [
+                        {
+                            "node": {
+                                "data": {"identity": "pkg:test/environment-provider"},
+                                "meta": {"id": artifact_id},
+                            }
+                        }
+                    ]
+                }
+            }
+        }
 
     def test_suite_started(self):
         """Create a fake test suite started to simulate ESR.
